@@ -62,9 +62,7 @@ class SwitchTile extends ActionTile {
                 tile.disable();
             }
         }
-        console.log(controlled, touchingSwitch);
         controlled = (~touchingSwitch) & ~(~0 << level.map.characters.length);
-        console.log(controlled);
         if (this.singleUse) {
             this.disable();
         }

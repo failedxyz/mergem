@@ -80,9 +80,9 @@ class LevelMap {
         return [GWIDTH / 2 - cameraFocus[0] * this.zoom, GHEIGHT / 2 - cameraFocus[1] * this.zoom, sw, sh];
     }
     update() {
-        this.zoom += (this.targetzoom - this.zoom) / 8;
-        cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 8;
-        cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 8;
+        this.zoom += (this.targetzoom - this.zoom) / 16;
+        cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 24;
+        cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 24;
         for (var i = 1; i < this.characters.length; ++i) {
             var character = this.characters[i];
             character.update();
