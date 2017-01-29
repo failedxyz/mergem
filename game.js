@@ -92,7 +92,6 @@ class Character {
                 tile = map[this.y][this.x + 1];
                 break;
         }
-        console.log(tile);
         return !(tile instanceof WallTile);
     }
     animateMove(direction) {
