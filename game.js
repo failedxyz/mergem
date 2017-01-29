@@ -3,7 +3,7 @@ var moving = false;
 var controlled;
 
 const COLORS = [[0, 102, 204], [204, 0, 102], [102, 204, 0]];
-const INTERVAL = 0.09;
+// const INTERVAL = 0.5;
 
 const DIRECTION_UP = 1;
 const DIRECTION_DOWN = 2;
@@ -66,8 +66,8 @@ class LevelMap {
 class Character {
     constructor(color, x, y) {
         this.image = tint(imageLibrary.sprite, color);
-        this.targetx = this.x = x;
-        this.targety = this.y = y;
+        this.x = x;
+        this.y = y;
         this.direction = 0;
     }
     canMove(direction) {
@@ -75,16 +75,16 @@ class Character {
         var tile;
         switch (direction) {
             case DIRECTION_UP:
-                tile = map[this.targety - 1][this.targetx];
+                tile = map[this.y - 1][this.x];
                 break;
             case DIRECTION_DOWN:
-                tile = map[this.targety + 1][this.targetx];
+                tile = map[this.y + 1][this.x];
                 break;
             case DIRECTION_LEFT:
-                tile = map[this.targety][this.targetx - 1];
+                tile = map[this.y][this.x - 1];
                 break;
             case DIRECTION_RIGHT:
-                tile = map[this.targety][this.targetx + 1];
+                tile = map[this.y][this.x + 1];
                 break;
         }
         console.log(tile);
@@ -98,21 +98,22 @@ class Character {
         this.direction = direction;
         switch (direction) {
             case DIRECTION_UP:
-                this.targety -= 1;
+                this.y -= 1;
                 break;
             case DIRECTION_DOWN:
-                this.targety += 1;
+                this.y += 1;
                 break;
             case DIRECTION_LEFT:
-                this.targetx -= 1;
+                this.x -= 1;
                 break;
             case DIRECTION_RIGHT:
-                this.targetx += 1;
+                this.x += 1;
                 break;
         }
+        moving = false;
     }
     update() {
-        if (this.direction) {
+        /* if (this.direction) {
             var arrived = false;
             switch (this.direction) {
                 case DIRECTION_UP:
@@ -150,7 +151,7 @@ class Character {
                 this.y = this.targety;
                 moving = false;
             }
-        }
+        } */
     }
     render() {
         rawCtx.drawImage(this.image, this.x * TILE_SIZE, this.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
