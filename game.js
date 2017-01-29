@@ -11,6 +11,7 @@ const DIRECTION_LEFT = 3;
 const DIRECTION_RIGHT = 4;
 
 const CHARACTER_SIZE = 96;
+
 const NUM_LEVELS = 9;
 
 var cameraFocus;
@@ -424,6 +425,7 @@ class MainMenuState extends State {
             stateMachine.push(new GameState());
         } else if (isInside(mx, my, ...this.helpBtn)) {
             sfx.menuhit.play();
+            stateMachine.push(new HelpState());
         }
     }
     render() {
@@ -524,6 +526,23 @@ class EndgameState extends State {
         ctx.font = "90px 'Alfa Slab One'";
         ctx.fillStyle = "#ffffff";
         ctx.fillText(message, (GWIDTH - ctx.measureText(message).width) / 2, 200);
+    }
+}
+
+class HelpState extends State {
+    update() {
+        if (keys[27]) {
+            stateMachine.pop();
+            keys[27] = false;
+        }
+    }
+    render() {
+        ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
+
+        var message = "wasd to move, r to reset, esc to go back";
+        ctx.font = "20px 'Alfa Slab One'";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(message, 40, 200);
     }
 }
 
