@@ -1,4 +1,4 @@
-const TILE_SIZE = 64;
+const TILE_SIZE = 128;
 
 var imageLibrary = {
     "floor": "/assets/floor.png",
@@ -7,15 +7,21 @@ var imageLibrary = {
 };
 
 class Tile {
-    static create (char, metadata) {
+    static create(char, metadata) {
         var symtable = metadata.symtable;
-        [this.x, this.y] = metadata.coordinates;
+        var [x, y] = metadata.coordinates;
         if (char in symtable) {
             var tiletype = tiledefs[symtable[char]];
-            return new tiletype();
-        } else {
-            return new SpaceTile();
+            return new tiletype(x, y);
         }
+        if (char.match(/^\d$/)) {
+            return new SpawnTile(x, y);
+        }
+        return new SpaceTile(x, y);
+    }
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
     }
     render(rCanvas) {
         var ctx = rCanvas.getContext("2d");
@@ -24,22 +30,31 @@ class Tile {
     }
 }
 
+class ActionTile extends Tile {
+}
+
 class FloorTile extends Tile {
-    constructor() {
-        super();
-        this.tileImage = imageLibrary["floor"];
+    constructor(x, y) {
+        super(x, y);
+        this.tileImage = imageLibrary.floor;
+    }
+}
+class SpawnTile extends FloorTile {
+    constructor(x, y) {
+        super(x, y);
+        this.tileImage = imageLibrary.floor;
     }
 }
 class SpaceTile extends Tile {
-    constructor() {
-        super();
-        this.tileImage = imageLibrary["space"];
+    constructor(x, y) {
+        super(x, y);
+        this.tileImage = imageLibrary.space;
     }
 }
 class WallTile extends Tile {
-    constructor() {
-        super();
-        this.tileImage = imageLibrary["wall"];
+    constructor(x, y) {
+        super(x, y);
+        this.tileImage = imageLibrary.wall;
     }
 }
 

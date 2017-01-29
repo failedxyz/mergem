@@ -4,12 +4,33 @@ var levels;
 var ci;
 var imageLibrary = imageLibrary || {};
 
+const GWIDTH = 1280, GHEIGHT = 720;
+var zoom = 0.6;
+
 var GameCamera = function() {};
 var Level = function() {};
-var LevelMap = function(array) {
-    this.tilemap = array;
-    this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
-    this.render = function(rCanvas) {
+class LevelMap {
+    static parse(mapdata, metadata) {
+        var lines = mapdata.split(/\r?\n/g).map(function(line) { return line.replace(/~+$/, ""); }).filter(function(line) { return line.length > 0; });
+        var maparray = [];
+        for (var y = 0; y < lines.length; y += 1) {
+            var line = lines[y];
+            var row = [];
+            for (var x = 0; x < line.length; x += 1) {
+                metadata.coordinates = [x, y];
+                row.push(Tile.create(line.charAt(x), metadata));
+            }
+            maparray.push(row);
+        }
+        var map = new LevelMap(maparray);
+        return map;
+    }
+    constructor(array) {
+        super();
+        this.tilemap = array;
+        this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
+    }
+    render(rCanvas) {
         var ctx = rCanvas.getContext("2d");
         for (var y = 0; y < this.tilemap.length; ++y) {
             var row = this.tilemap[y];
@@ -18,24 +39,8 @@ var LevelMap = function(array) {
             }
         }
         return rCanvas;
-    };
-};
-
-LevelMap.parse = function(mapdata, metadata) {
-    var lines = mapdata.split(/\r?\n/g).map(function(line) { return line.trim(); }).filter(function(line) { return line.length > 0; });
-    var maparray = [];
-    for (var y = 0; y < lines.length; y += 1) {
-        var line = lines[y];
-        var row = [];
-        for (var x = 0; x < line.length; x += 1) {
-            metadata.coordinates = [x, y];
-            row.push(Tile.create(line.charAt(x), metadata));
-        }
-        maparray.push(row);
     }
-    var map = new LevelMap(maparray);
-    return map;
-};
+}
 
 Level.parse = function(data) {
      var parts = data.split("jason lu plays eroge everyday");
@@ -53,11 +58,21 @@ Level.parse = function(data) {
 
 var render = function() {
     var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
     var level = levels[ci];
     var rawCanvas = document.createElement("canvas");
     [rawCanvas.width, rawCanvas.height] = level.map.size;
-    var rawCanvas = level.map.render(rawCanvas);
-    ctx.drawImage(rawCanvas, 0, 0, 1000, 500);
+    rawCanvas = level.map.render(rawCanvas);
+
+    var [sw, sh] = [rawCanvas.width * zoom, rawCanvas.height * zoom];
+    var sx = 0, sy = 0;
+    if (sw < GWIDTH) {
+        sx = (GWIDTH - sw) / 2;
+    }
+    if (sh < GHEIGHT) {
+        sy = (GHEIGHT - sh) / 2;
+    }
+    ctx.drawImage(rawCanvas, sx, sy, sw, sh);
 };
 
 var frame = function () {
