@@ -172,7 +172,7 @@ class Character {
         this.image = tint(imageLibrary.sprite, color);
         this.displayx = this.x = x;
         this.displayy = this.y = y;
-        this.direction = 0;
+        this.direction = this.momentum = 0;
         this.controlled = false;
     }
     canMove(direction) {
@@ -194,13 +194,17 @@ class Character {
         }
         return !(tile instanceof WallTile);
     }
-    animateMove(direction) {
+    startMove(direction) {
         if (!this.canMove(direction)) {
+            this.momentum = 0;
             moving = false;
             return false;
         }
         var map = levels[ci].map.tilemap;
         this.direction = direction;
+        if (map[this.y][this.x] instanceof IceTile) {
+            this.momentum = direction;
+        }
         switch (direction) {
             case DIRECTION_UP:
                 this.y -= 1;
@@ -219,7 +223,6 @@ class Character {
         if (tile instanceof ActionTile) {
             tile.action(this);
         }
-        moving = false;
         return true;
     }
     currentTile() {
@@ -227,6 +230,12 @@ class Character {
         return map[this.y][this.x];
     }
     update() {
+        if (!(this.currentTile() instanceof IceTile)) {
+            this.momentum = 0;
+            if (this.direction === 0) {
+                moving = false;
+            }
+        }
         if (this.direction) {
             var arrived = false;
             switch (this.direction) {
@@ -260,10 +269,14 @@ class Character {
                     break;
             }
             if (arrived) {
-                this.direction = 0;
-                this.displayx = this.x;
-                this.displayy = this.y;
-                moving = false;
+                if (this.momentum) {
+                    this.startMove(this.momentum);
+                } else {
+                    this.direction = 0;
+                    this.displayx = this.x;
+                    this.displayy = this.y;
+                    moving = false;
+                }
             }
         }
     }
@@ -304,7 +317,7 @@ var attemptMove = function (direction) {
             var character = level.map.characters[i];
             if (character === null) continue;
             if ((controlled >> i) & 1) {
-                madeMove |= character.animateMove(direction);
+                madeMove |= character.startMove(direction);
             }
         }
         if (madeMove) KeyPress += 1;
@@ -408,7 +421,7 @@ var loadLevel = function (level) {
 var init = function () {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
-    ci = 6;
+    ci = 4;
     keys = Array(256).fill(false);
 
     var tasks = [loadImages, loadLevels];
