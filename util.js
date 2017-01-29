@@ -27,3 +27,7 @@ var tint = function (img, col) {
     ctx.putImageData(imgdata, 0, 0);
     return canvas;
 };
+
+var mergeColors = function() {
+
+};

@@ -69,6 +69,7 @@ class LevelMap {
 
 class Character {
     constructor(color, x, y) {
+        this.color = color;
         this.image = tint(imageLibrary.sprite, color);
         this.x = x;
         this.y = y;
