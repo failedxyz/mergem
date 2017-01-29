@@ -18,4 +18,4 @@ symtable:
   "s": switch
   "p": portal
 portals:
-  - 27,1,1,1,1
+  - 24,1,1,1,1
