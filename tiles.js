@@ -74,7 +74,7 @@ class SwitchTile extends ActionTile {
             if (level.map.characters[i] === null) continue;
             level.map.characters[i].controlled = (controlled >> i) & 1;
         }
-        sfx.merge.play();
+        sfx.switch.play();
         if (this.singleUse) {
             this.disable();
         }

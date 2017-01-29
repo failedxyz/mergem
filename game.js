@@ -112,8 +112,8 @@ class LevelMap {
     update() {
         var i, j, character;
         this.zoom += (this.targetzoom - this.zoom) / 16;
-        cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 24;
-        cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 24;
+        cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 16;
+        cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 16;
         for (i = 1; i < this.characters.length; ++i) {
             character = this.characters[i];
             if (character === null) continue;
