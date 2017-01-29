@@ -1,6 +1,6 @@
 const TILE_SIZE = 128;
 
-var imageLibrary = {
+imageLibrary = {
     "floor": "/assets/floor.png",
     "space": "/assets/space.png",
     "sprite": "/assets/sprite.png",
@@ -24,10 +24,8 @@ class Tile {
         this.x = x;
         this.y = y;
     }
-    render(rCanvas) {
-        var ctx = rCanvas.getContext("2d");
-        ctx.drawImage(this.tileImage, this.x * TILE_SIZE, this.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        return rCanvas;
+    render() {
+        rawCtx.drawImage(this.tileImage, this.x * TILE_SIZE, this.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
     }
 }
 

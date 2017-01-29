@@ -1,3 +1,11 @@
+var canvas;
+var keys;
+var levels;
+var ci;
+var rawCanvas;
+var rawCtx;
+var imageLibrary;
+
 var tint = function (img, col) {
     if (col === undefined) return img;
     var canvas = document.createElement('canvas');

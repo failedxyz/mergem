@@ -1,9 +1,3 @@
-var canvas;
-var keys;
-var levels;
-var ci;
-var imageLibrary = imageLibrary || {};
-
 const GWIDTH = 1280, GHEIGHT = 720;
 var moving = false;
 
@@ -42,18 +36,17 @@ class LevelMap {
     }
     update() {
     }
-    render(rCanvas) {
+    render() {
         for (var y = 0; y < this.tilemap.length; ++y) {
             var row = this.tilemap[y];
             for (var x = 0; x < row.length; ++x) {
-                rCanvas = row[x].render(rCanvas);
+                row[x].render(rawCanvas);
             }
         }
         for (var i = 1; i < this.characters.length; ++i) {
             var character = this.characters[i];
-            rCanvas = character.render(rCanvas);
+            character.render(rawCanvas);
         }
-        return rCanvas;
     }
 }
 
@@ -63,10 +56,8 @@ class Character {
         this.x = x;
         this.y = y;
     }
-    render(rCanvas) {
-        var ctx = rCanvas.getContext("2d");
-        ctx.drawImage(this.image, this.x * TILE_SIZE, this.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-        return rCanvas;
+    render() {
+        rawCtx.drawImage(this.image, this.x * TILE_SIZE, this.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
     }
 }
 
@@ -112,12 +103,10 @@ var update = function () {
 };
 
 var render = function () {
-    var ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
     var level = levels[ci];
-    var rawCanvas = document.createElement("canvas");
-    [rawCanvas.width, rawCanvas.height] = level.map.size;
-    rawCanvas = level.map.render(rawCanvas);
+    rawCtx.clearRect(0, 0, rawCanvas.width, rawCanvas.height);
+    level.map.render();
 
     var [sw, sh] = [rawCanvas.width * level.map.zoom, rawCanvas.height * level.map.zoom];
     var sx = 0, sy = 0;
@@ -172,6 +161,7 @@ var loadImages = function (callback) {
 
 var init = function () {
     canvas = document.getElementById("canvas");
+    ctx = canvas.getContext("2d");
     ci = 0;
     keys = Array(256).fill(false);
 
@@ -186,6 +176,9 @@ var init = function () {
             window.onkeydown = keydown;
             window.onkeyup = keyup;
 
+            rawCanvas = document.createElement("canvas");
+            [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
+            rawCtx = rawCanvas.getContext("2d");
             requestAnimationFrame(frame);
         }
     })(0);
