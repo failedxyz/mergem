@@ -44,10 +44,12 @@ class LevelMap {
         this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
     }
     updateCamera() {
+        var i;
         var avgx = 0, avgy = 0;
         var controlledArray = [];
-        for (var i = 1; i < this.characters.length; ++i) {
+        for (i = 1; i < this.characters.length; ++i) {
             var char = this.characters[i];
+            if (char === null) continue;
             if ((controlled >> i) & 1) {
                 controlledArray.push(i);
                 avgx += char.x;
@@ -59,7 +61,7 @@ class LevelMap {
 
         var maxDist = 0;
 
-        for (var i of controlledArray) {
+        for (i of controlledArray) {
             var char = this.characters[i];
             var dist = Math.pow(Math.pow(char.x - avgx, 2) + Math.pow(char.y - avgy, 2), 0.5);
             if (dist > maxDist) maxDist = dist;
@@ -80,12 +82,35 @@ class LevelMap {
         return [GWIDTH / 2 - cameraFocus[0] * this.zoom, GHEIGHT / 2 - cameraFocus[1] * this.zoom, sw, sh];
     }
     update() {
+        var i, j, character;
         this.zoom += (this.targetzoom - this.zoom) / 16;
         cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 24;
         cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 24;
-        for (var i = 1; i < this.characters.length; ++i) {
-            var character = this.characters[i];
+        for (i = 1; i < this.characters.length; ++i) {
+            character = this.characters[i];
+            if (character === null) continue;
             character.update();
+        }
+        for (i = 1; i < this.characters.length; ++i) {
+            var collides = 0;
+            if (this.characters[i] === null) continue;
+            for (j = 1; j < this.characters.length; ++j) {
+                if (i == j) continue;
+                if (this.characters[j] === null) continue;
+                var ic = [this.characters[i].x, this.characters[i].y];
+                var jc = [this.characters[j].x, this.characters[j].y];
+                if (ic[0] == jc[0] && ic[1] == jc[1]) {
+                    collides = j;
+                    break;
+                }
+            }
+            if (collides) {
+                var mergedColor = mergeColors(this.characters[i].color, this.characters[j].color);
+                console.log(mergedColor);
+                this.characters[j] = null;
+                this.characters[i].color = mergedColor;
+                this.characters[i].image = tint(imageLibrary.sprite, mergedColor);
+            }
         }
     }
     render() {
@@ -97,6 +122,7 @@ class LevelMap {
         }
         for (var i = 1; i < this.characters.length; ++i) {
             var character = this.characters[i];
+            if (character === null) continue;
             character.render();
         }
     }
@@ -228,6 +254,7 @@ var attemptMove = function (direction) {
         moving = true;
         for (var i = 1; i < level.map.characters.length; i += 1) {
             var character = level.map.characters[i];
+            if (character === null) continue;
             if ((controlled >> i) & 1) {
                 character.animateMove(direction);
             }
