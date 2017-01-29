@@ -498,6 +498,7 @@ class GameState extends State {
 class PauseState extends State {
     update() {
         if (keys[27]) {
+            sfx.menuhit.play();
             stateMachine.pop();
             keys[27] = false;
         }
@@ -522,6 +523,7 @@ class EndgameState extends State {
     }
     update() {
         if (keys[27]) {
+            sfx.menuhit.play();
             bgm.endgame.pause();
             bgm.endgame.currentTime = 0;
             bgm.bgm.play();
@@ -543,6 +545,7 @@ class EndgameState extends State {
 class HelpState extends State {
     update() {
         if (keys[27]) {
+            sfx.menuhit.play();
             stateMachine.pop();
             keys[27] = false;
         }
