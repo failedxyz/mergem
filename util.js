@@ -16,7 +16,8 @@ var sfx = {
     portal: new Howl({ src: ['assets/portal.mp3'] }),
     end: new Howl({ src: ['assets/end.mp3'] }),
     switch: new Howl({ src: ['assets/switch.wav'] }),
-    retry: new Howl({ src: ['assets/retry.mp3'] })
+    retry: new Howl({ src: ['assets/retry.mp3'] }),
+    applause: new Howl({ src: ['assets/applause.mp3'] })
 };
 
 var bgm = {

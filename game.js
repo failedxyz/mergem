@@ -11,7 +11,7 @@ const DIRECTION_LEFT = 3;
 const DIRECTION_RIGHT = 4;
 
 const CHARACTER_SIZE = 96;
-const NUM_LEVELS = 7;
+const NUM_LEVELS = 9;
 
 var cameraFocus;
 var cameraTargetFocus;
@@ -515,6 +515,7 @@ class EndgameState extends State {
         super();
         bgm.bgm.pause();
         bgm.endgame.play();
+        sfx.applause.play();
     }
     render() {
         ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
@@ -544,7 +545,7 @@ var init = function () {
     bgm.bgm.play();
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
-    ci = 7;
+    ci = 0;
     keys = Array(256).fill(false);
     stateMachine = new StateMachine();
     stateMachine.push(new MainMenuState());
