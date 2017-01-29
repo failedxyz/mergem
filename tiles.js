@@ -3,7 +3,7 @@ const TILE_SIZE = 128;
 imageLibrary = {
     floor: "assets/floor.png",
     space: "assets/space.png",
-    sprite: "assets/sprite.png",
+    sprite: "assets/sprite1.png",
     switch: "assets/switch.png",
     wall: "assets/wall.png",
 };
@@ -50,6 +50,7 @@ class SwitchTile extends ActionTile {
         this.disabled = true;
     }
     action() {
+        var i;
         if (numPlayers() == 1) {
             return this.disable();
         }
@@ -58,7 +59,7 @@ class SwitchTile extends ActionTile {
             return;
         }
         var touchingSwitch = 0;
-        for (var i = 1; i < level.map.characters.length; ++i) {
+        for (i = 1; i < level.map.characters.length; ++i) {
             if (level.map.characters[i] === null) continue;
             var tile = level.map.characters[i].currentTile();
             if (tile instanceof SwitchTile && !tile.disabled) {
@@ -67,7 +68,8 @@ class SwitchTile extends ActionTile {
             }
         }
         controlled = (~touchingSwitch) & ~(~0 << level.map.characters.length);
-        for (var i = 1; i < level.map.characters.length; ++i) {
+        for (i = 1; i < level.map.characters.length; ++i) {
+            if (level.map.characters[i] === null) continue;
             level.map.characters[i].controlled = (controlled >> i) & 1;
         }
         console.log(controlled);

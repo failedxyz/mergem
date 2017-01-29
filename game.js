@@ -44,7 +44,7 @@ class LevelMap {
         this.zoom = this.targetzoom = 0.5;
         this.tilemap = array;
         this.characters = characters;
-        this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
+        this.size = [Math.max.apply(null, array.map((o) => { return o.length;})) * TILE_SIZE, array.length * TILE_SIZE];
     }
     updateCamera() {
         var i;
@@ -62,7 +62,7 @@ class LevelMap {
         avgx /= controlledArray.length;
         avgy /= controlledArray.length;
 
-        var maxDist = 0;
+        var maxDist = 0.1;
 
         for (i of controlledArray) {
             var char = this.characters[i];
@@ -113,6 +113,13 @@ class LevelMap {
                 this.characters[j] = null;
                 this.characters[i].color = mergedColor;
                 this.characters[i].image = tint(imageLibrary.sprite, mergedColor);
+                this.characters[i].controlled = true;
+                controlled |= Math.pow(2, i);
+                controlled &= ~Math.pow(2, j);
+                var tile = this.characters[i].currentTile();
+                if (tile instanceof ExitTile) {
+                    tile.action();
+                }
             }
         }
     }
@@ -308,7 +315,7 @@ var render = function () {
     ctx.drawImage(rawCanvas, ...level.map.getCameraFrame());
     ctx.font="30px 'Alfa Slab One'";
     ctx.fillStyle = '#fff';
-    ctx.fillText("Level "+ci,50,50);
+    ctx.fillText("Level "+(ci+1),50,50);
     ctx.fillText("Steps Taken: " + KeyPress,1000,50);
 
 };
@@ -388,7 +395,7 @@ var init = function () {
             window.onkeyup = keyup;
             window.onmousewheel = mousewheel;
 
-            loadLevel(0);
+            loadLevel(ci);
             requestAnimationFrame(frame);
         }
     })(0);
@@ -405,7 +412,7 @@ var keyup = function (event) {
 var mousewheel = function (event) {
     customzoom = true;
     levels[ci].map.targetzoom += (event.wheelDelta || -event.detail) / 1200;
-    levels[ci].map.targetzoom = Math.max(0.2, Math.min(1, levels[ci].map.targetzoom));
+    levels[ci].map.targetzoom = Math.max(0.2, Math.min(1.2, levels[ci].map.targetzoom));
 };
 
 window.onload = init;
