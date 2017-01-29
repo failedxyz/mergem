@@ -111,7 +111,7 @@ class LevelMap {
     }
     update() {
         var i, j, character;
-        this.zoom += (this.targetzoom - this.zoom) / 16;
+        this.zoom += (this.targetzoom - this.zoom) / 8;
         cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 16;
         cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 16;
         for (i = 1; i < this.characters.length; ++i) {
@@ -339,6 +339,7 @@ var update = function () {
         keys[68] = keys[39] = false;
     }
     if (keys[82]) {
+        sfx.retry.play();
         loadLevel(ci);
         keys[82] = false;
     }
