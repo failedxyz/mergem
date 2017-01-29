@@ -278,6 +278,10 @@ var update = function () {
         attemptMove(DIRECTION_RIGHT);
         keys[68] = keys[39] = false;
     }
+    if (keys[82]) {
+        loadLevel(ci);
+        keys[82] = false;
+    }
     level.map.update();
 };
 
@@ -298,11 +302,14 @@ var frame = function () {
 
 var loadLevels = function (callback) {
     console.log("loading levels...");
+    leveldata = [];
     levels = [];
     (function next(i) {
         if (i < 7) {
             $.get(`levels/${i}.txt`, function (data) {
-                levels.push(Level.parse(data));
+                var level = Level.parse(data);
+                leveldata.push(data);
+                levels.push(level);
                 next(i + 1);
             });
         } else {
@@ -330,6 +337,18 @@ var loadImages = function (callback) {
     })(0);
 };
 
+var loadLevel = function (level) {
+    console.log("loading level " + level);
+    ci = level;
+    levels[ci] = Level.parse(leveldata[ci]);
+    rawCanvas = document.createElement("canvas");
+    [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
+    rawCtx = rawCanvas.getContext("2d");
+    for (var j = 0; j < levels[ci].metadata.control.length; ++j) {
+        controlled |= (1 << levels[ci].metadata.control[j]);
+    }
+};
+
 var init = function () {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
@@ -348,12 +367,7 @@ var init = function () {
             window.onkeyup = keyup;
             window.onmousewheel = mousewheel;
 
-            rawCanvas = document.createElement("canvas");
-            [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
-            rawCtx = rawCanvas.getContext("2d");
-            for (var j = 0; j < levels[ci].metadata.control.length; ++j) {
-                controlled |= (1 << levels[ci].metadata.control[j]);
-            }
+            loadLevel(0);
             requestAnimationFrame(frame);
         }
     })(0);

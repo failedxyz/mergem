@@ -73,6 +73,17 @@ class SwitchTile extends ActionTile {
     }
 }
 
+class ExitTile extends ActionTile {
+    constructor(x, y) {
+        super(x, y);
+        this.tileImage = tint(imageLibrary.floor, [102, 204, 0]);
+    }
+    action() {
+        ci += 1;
+        loadLevel(ci);
+    }
+}
+
 class FloorTile extends Tile {
     constructor(x, y) {
         super(x, y);
@@ -102,7 +113,7 @@ var tiledefs = {
     "floor": FloorTile,
     "switch": SwitchTile,
     "wall": WallTile,
-    "exit": SpaceTile,
+    "exit": ExitTile,
     "ice": SpaceTile,
     "portal": SpaceTile,
 };

@@ -1,5 +1,6 @@
 var canvas;
 var keys;
+var leveldata;
 var levels;
 var ci;
 var rawCanvas;
