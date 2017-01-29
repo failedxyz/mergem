@@ -2,8 +2,9 @@ const TILE_SIZE = 128;
 
 var imageLibrary = {
     "floor": "/assets/floor.png",
+    "space": "/assets/space.png",
+    "sprite": "/assets/sprite.png",
     "wall": "/assets/wall.png",
-    "space": "/assets/space.png", // TODO
 };
 
 class Tile {

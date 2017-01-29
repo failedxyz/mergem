@@ -5,56 +5,44 @@ var ci;
 var imageLibrary = imageLibrary || {};
 
 const GWIDTH = 1280, GHEIGHT = 720;
-var zoom = 0.6;
+var moving = false;
 
-var tint = function (img, col) {
-    if (col === undefined) return img;
-    var canvas = document.createElement('canvas');
-    canvas.height = img.height;
-    canvas.width = img.width;
-    var ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    var w = img.width,
-        h = img.height;
-    if (!w || !h) return img;
-    var imgdata = ctx.getImageData(0, 0, w, h);
-    var rgba = imgdata.data;
-    //console.log(imgdata.data);
-    for (var px = 0, ct = w * h * 4; px < ct; px += 4) {
-        rgba[px] *= col[0] / 255;
-        rgba[px + 1] *= col[1] / 255;
-        rgba[px + 2] *= col[2] / 255;
-    }
-    ctx.putImageData(imgdata, 0, 0);
-    return canvas;
-};
+const COLORS = [[0, 102, 204], [204, 0, 102], [102, 204, 0]];
 
 class LevelMap {
     static parse(mapdata, metadata) {
         var lines = mapdata.split(/\r?\n/g).map(function (line) { return line.replace(/~+$/, ""); }).filter(function (line) { return line.length > 0; });
         var maparray = [];
+        var characters = [null];
+        var colors_temp = COLORS.slice(0);
         for (var y = 0; y < lines.length; ++y) {
             var line = lines[y];
             var row = [];
             for (var x = 0; x < line.length; ++x) {
                 metadata.coordinates = [x, y];
-                row.push(Tile.create(line.charAt(x), metadata));
+                var char = line.charAt(x);
+                var tile = Tile.create(char, metadata);
+                row.push(tile);
+                if (tile instanceof SpawnTile) {
+                    characters.push(new Character(colors_temp.shift(), x, y));
+                }
             }
             maparray.push(row);
         }
-        var map = new LevelMap(maparray, metadata);
+        var map = new LevelMap(maparray, characters, metadata);
         return map;
     }
-    constructor(array, metadata) {
+    constructor(array, characters, metadata) {
+        this.zoom = 0.8;
         this.tilemap = array;
-        this.characters = [null];
-        for (var i = 1; i <= metadata.characters; ++i) {
-            this.characters.push(new Character());
-        }
+        this.characters = characters;
         this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
     }
+    adjustZoom() {
+    }
+    update() {
+    }
     render(rCanvas) {
-        var ctx = rCanvas.getContext("2d");
         for (var y = 0; y < this.tilemap.length; ++y) {
             var row = this.tilemap[y];
             for (var x = 0; x < row.length; ++x) {
@@ -62,18 +50,22 @@ class LevelMap {
             }
         }
         for (var i = 1; i < this.characters.length; ++i) {
-
+            var character = this.characters[i];
+            rCanvas = character.render(rCanvas);
         }
         return rCanvas;
     }
 }
 
 class Character {
-    constructor() {
-
+    constructor(color, x, y) {
+        this.image = tint(imageLibrary.sprite, color);
+        this.x = x;
+        this.y = y;
     }
     render(rCanvas) {
         var ctx = rCanvas.getContext("2d");
+        ctx.drawImage(this.image, this.x * TILE_SIZE, this.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
         return rCanvas;
     }
 }
@@ -94,6 +86,31 @@ class Level {
     }
 }
 
+const DIRECTION_UP = 0;
+const DIRECTION_DOWN = 0;
+const DIRECTION_LEFT = 0;
+const DIRECTION_RIGHT = 0;
+
+var attemptMove = function (direction) {
+    if (!moving) {
+
+    }
+};
+
+var update = function () {
+    if (keys[87] || keys[38]) {
+        attemptMove(DIRECTION_UP);
+    } else if (keys[83] || keys[40]) {
+        attemptMove(DIRECTION_DOWN);
+    } else if (keys[65] || keys[37]) {
+        attemptMove(DIRECTION_LEFT);
+    } else if (keys[68] || keys[39]) {
+        attemptMove(DIRECTION_RIGHT);
+    }
+    var level = levels[ci];
+    level.map.update();
+};
+
 var render = function () {
     var ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
@@ -102,7 +119,7 @@ var render = function () {
     [rawCanvas.width, rawCanvas.height] = level.map.size;
     rawCanvas = level.map.render(rawCanvas);
 
-    var [sw, sh] = [rawCanvas.width * zoom, rawCanvas.height * zoom];
+    var [sw, sh] = [rawCanvas.width * level.map.zoom, rawCanvas.height * level.map.zoom];
     var sx = 0, sy = 0;
     if (sw < GWIDTH) {
         sx = (GWIDTH - sw) / 2;
@@ -114,6 +131,7 @@ var render = function () {
 };
 
 var frame = function () {
+    update();
     render();
     requestAnimationFrame(frame);
 };
