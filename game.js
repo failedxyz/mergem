@@ -14,6 +14,8 @@ const CHARACTER_SIZE = 96;
 var cameraFocus;
 var cameraTargetFocus;
 
+var KeyPress=0;
+
 class LevelMap {
     static parse(mapdata, metadata) {
         var lines = mapdata.split(/\r?\n/g).map(function (line) { return line.replace(/~+$/, ""); }).filter(function (line) { return line.length > 0; });
@@ -132,7 +134,7 @@ class Character {
     animateMove(direction) {
         if (!this.canMove(direction)) {
             moving = false;
-            return;
+            return false;
         }
         var map = levels[ci].map.tilemap;
         this.direction = direction;
@@ -155,6 +157,7 @@ class Character {
             tile.action();
         }
         moving = false;
+        return true;
     }
     currentTile() {
         var map = levels[ci].map.tilemap;
@@ -226,12 +229,14 @@ var attemptMove = function (direction) {
     var level = levels[ci];
     if (!moving) {
         moving = true;
+        var madeMove = false;
         for (var i = 1; i < level.map.characters.length; i += 1) {
             var character = level.map.characters[i];
             if ((controlled >> i) & 1) {
-                character.animateMove(direction);
+                madeMove |= character.animateMove(direction);
             }
         }
+        if (madeMove) KeyPress += 1;
     }
 };
 
@@ -261,6 +266,11 @@ var render = function () {
     level.map.render();
 
     ctx.drawImage(rawCanvas, ...level.map.getCameraFrame());
+    ctx.font="30px 'Alfa Slab One'";
+    ctx.fillStyle = '#fff';
+    ctx.fillText("Level "+ci,50,50);
+    ctx.fillText("Steps Taken: " + KeyPress,1000,50);
+
 };
 
 var frame = function () {
