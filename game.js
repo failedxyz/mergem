@@ -301,7 +301,7 @@ var loadLevels = function (callback) {
     levels = [];
     (function next(i) {
         if (i < 7) {
-            $.get(`/levels/${i}.txt`, function (data) {
+            $.get(`levels/${i}.txt`, function (data) {
                 levels.push(Level.parse(data));
                 next(i + 1);
             });
