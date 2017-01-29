@@ -17,3 +17,4 @@ symtable:
   '#': wall
   '.': floor
   's': switch
+  'e': exit

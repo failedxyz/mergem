@@ -13,6 +13,7 @@ const CHARACTER_SIZE = 96;
 
 var cameraFocus;
 var cameraTargetFocus;
+var customzoom = false;
 
 var KeyPress=0;
 
@@ -46,10 +47,12 @@ class LevelMap {
         this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
     }
     updateCamera() {
+        var i;
         var avgx = 0, avgy = 0;
         var controlledArray = [];
-        for (var i = 1; i < this.characters.length; ++i) {
+        for (i = 1; i < this.characters.length; ++i) {
             var char = this.characters[i];
+            if (char === null) continue;
             if ((controlled >> i) & 1) {
                 controlledArray.push(i);
                 avgx += char.x;
@@ -61,7 +64,7 @@ class LevelMap {
 
         var maxDist = 0;
 
-        for (var i of controlledArray) {
+        for (i of controlledArray) {
             var char = this.characters[i];
             var dist = Math.pow(Math.pow(char.x - avgx, 2) + Math.pow(char.y - avgy, 2), 0.5);
             if (dist > maxDist) maxDist = dist;
@@ -82,12 +85,35 @@ class LevelMap {
         return [GWIDTH / 2 - cameraFocus[0] * this.zoom, GHEIGHT / 2 - cameraFocus[1] * this.zoom, sw, sh];
     }
     update() {
-        this.zoom += (this.targetzoom - this.zoom) / 8;
-        cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 8;
-        cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 8;
-        for (var i = 1; i < this.characters.length; ++i) {
-            var character = this.characters[i];
+        var i, j, character;
+        this.zoom += (this.targetzoom - this.zoom) / 16;
+        cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 24;
+        cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 24;
+        for (i = 1; i < this.characters.length; ++i) {
+            character = this.characters[i];
+            if (character === null) continue;
             character.update();
+        }
+        for (i = 1; i < this.characters.length; ++i) {
+            var collides = 0;
+            if (this.characters[i] === null) continue;
+            for (j = 1; j < this.characters.length; ++j) {
+                if (i == j) continue;
+                if (this.characters[j] === null) continue;
+                var ic = [this.characters[i].x, this.characters[i].y];
+                var jc = [this.characters[j].x, this.characters[j].y];
+                if (ic[0] == jc[0] && ic[1] == jc[1]) {
+                    collides = j;
+                    break;
+                }
+            }
+            if (collides) {
+                var mergedColor = mergeColors(this.characters[i].color, this.characters[j].color);
+                console.log(mergedColor);
+                this.characters[j] = null;
+                this.characters[i].color = mergedColor;
+                this.characters[i].image = tint(imageLibrary.sprite, mergedColor);
+            }
         }
     }
     render() {
@@ -99,6 +125,7 @@ class LevelMap {
         }
         for (var i = 1; i < this.characters.length; ++i) {
             var character = this.characters[i];
+            if (character === null) continue;
             character.render();
         }
     }
@@ -111,6 +138,7 @@ class Character {
         this.x = x;
         this.y = y;
         this.direction = 0;
+        this.controlled = false;
     }
     canMove(direction) {
         var map = levels[ci].map.tilemap;
@@ -205,7 +233,13 @@ class Character {
         } */
     }
     render() {
+        rawCtx.save();
+        if (this.controlled) {
+            rawCtx.shadowBlur = 50;
+            rawCtx.shadowColor = rgbArrayToString(this.color);
+        }
         rawCtx.drawImage(this.image, this.x * TILE_SIZE + (TILE_SIZE - CHARACTER_SIZE) / 2, this.y * TILE_SIZE + (TILE_SIZE - CHARACTER_SIZE) / 2, CHARACTER_SIZE, CHARACTER_SIZE);
+        rawCtx.restore();
     }
 }
 
@@ -228,10 +262,12 @@ class Level {
 var attemptMove = function (direction) {
     var level = levels[ci];
     if (!moving) {
+        customzoom = false;
         moving = true;
         var madeMove = false;
         for (var i = 1; i < level.map.characters.length; i += 1) {
             var character = level.map.characters[i];
+            if (character === null) continue;
             if ((controlled >> i) & 1) {
                 madeMove |= character.animateMove(direction);
             }
@@ -242,7 +278,7 @@ var attemptMove = function (direction) {
 
 var update = function () {
     var level = levels[ci];
-    level.map.updateCamera();
+    if (!customzoom) level.map.updateCamera();
     if (keys[87] || keys[38]) {
         attemptMove(DIRECTION_UP);
         keys[87] = keys[38] = false;
@@ -255,6 +291,10 @@ var update = function () {
     } else if (keys[68] || keys[39]) {
         attemptMove(DIRECTION_RIGHT);
         keys[68] = keys[39] = false;
+    }
+    if (keys[82]) {
+        loadLevel(ci);
+        keys[82] = false;
     }
     level.map.update();
 };
@@ -281,11 +321,14 @@ var frame = function () {
 
 var loadLevels = function (callback) {
     console.log("loading levels...");
+    leveldata = [];
     levels = [];
     (function next(i) {
         if (i < 7) {
-            $.get(`/levels/${i}.txt`, function (data) {
-                levels.push(Level.parse(data));
+            $.get(`levels/${i}.txt`, function (data) {
+                var level = Level.parse(data);
+                leveldata.push(data);
+                levels.push(level);
                 next(i + 1);
             });
         } else {
@@ -313,6 +356,19 @@ var loadImages = function (callback) {
     })(0);
 };
 
+var loadLevel = function (level) {
+    console.log("loading level " + level);
+    ci = level;
+    levels[ci] = Level.parse(leveldata[ci]);
+    rawCanvas = document.createElement("canvas");
+    [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
+    rawCtx = rawCanvas.getContext("2d");
+    for (var j = 0; j < levels[ci].metadata.control.length; ++j) {
+        controlled |= (1 << levels[ci].metadata.control[j]);
+        levels[ci].map.characters[levels[ci].metadata.control[j]] = true;
+    }
+};
+
 var init = function () {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
@@ -331,12 +387,7 @@ var init = function () {
             window.onkeyup = keyup;
             window.onmousewheel = mousewheel;
 
-            rawCanvas = document.createElement("canvas");
-            [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
-            rawCtx = rawCanvas.getContext("2d");
-            for (var j = 0; j < levels[ci].metadata.control.length; ++j) {
-                controlled |= (1 << levels[ci].metadata.control[j]);
-            }
+            loadLevel(0);
             requestAnimationFrame(frame);
         }
     })(0);
@@ -351,6 +402,7 @@ var keyup = function (event) {
 };
 
 var mousewheel = function (event) {
+    customzoom = true;
     levels[ci].map.targetzoom += (event.wheelDelta || -event.detail) / 1200;
     levels[ci].map.targetzoom = Math.max(0.2, Math.min(1, levels[ci].map.targetzoom));
 };

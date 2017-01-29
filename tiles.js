@@ -1,11 +1,11 @@
 const TILE_SIZE = 128;
 
 imageLibrary = {
-    floor: "/assets/floor.png",
-    space: "/assets/space.png",
-    sprite: "/assets/sprite.png",
-    switch: "/assets/switch.png",
-    wall: "/assets/wall.png",
+    floor: "assets/floor.png",
+    space: "assets/space.png",
+    sprite: "assets/sprite.png",
+    switch: "assets/switch.png",
+    wall: "assets/wall.png",
 };
 
 class Tile {
@@ -50,23 +50,42 @@ class SwitchTile extends ActionTile {
         this.disabled = true;
     }
     action() {
+        if (numPlayers() == 1) {
+            return this.disable();
+        }
         var level = levels[ci];
         if (this.disabled) {
             return;
         }
         var touchingSwitch = 0;
         for (var i = 1; i < level.map.characters.length; ++i) {
+            if (level.map.characters[i] === null) continue;
             var tile = level.map.characters[i].currentTile();
             if (tile instanceof SwitchTile && !tile.disabled) {
                 touchingSwitch |= 1 << i;
                 tile.disable();
             }
         }
-        console.log(controlled, touchingSwitch);
         controlled = (~touchingSwitch) & ~(~0 << level.map.characters.length);
+        for (var i = 1; i < level.map.characters.length; ++i) {
+            level.map.characters[i].controlled = (controlled >> i) & 1;
+        }
         console.log(controlled);
         if (this.singleUse) {
             this.disable();
+        }
+    }
+}
+
+class ExitTile extends ActionTile {
+    constructor(x, y) {
+        super(x, y);
+        this.tileImage = tint(imageLibrary.floor, [102, 204, 0]);
+    }
+    action() {
+        if (numPlayers() == 1) {
+            ci += 1;
+            loadLevel(ci);
         }
     }
 }
@@ -100,7 +119,7 @@ var tiledefs = {
     "floor": FloorTile,
     "switch": SwitchTile,
     "wall": WallTile,
-    "exit": SpaceTile,
+    "exit": ExitTile,
     "ice": SpaceTile,
     "portal": SpaceTile,
 };

@@ -1,11 +1,17 @@
 var canvas;
 var keys;
+var leveldata;
 var levels;
 var ci;
 var rawCanvas;
 var rawCtx;
 var controlled;
 var imageLibrary;
+
+var numPlayers = function () {
+    var level = levels[ci];
+    return level.map.characters.filter(function (character) { return character !== null; }).length;
+};
 
 var tint = function (img, col) {
     if (col === undefined) return img;
@@ -28,6 +34,12 @@ var tint = function (img, col) {
     return canvas;
 };
 
-var mergeColors = function() {
+var rgbArrayToString = function (arr) {
+    return `rgb(${arr[0]}, ${arr[1]}, ${arr[2]})`;
+};
 
+var mergeColors = function (color1, color2) {
+    var [r1, g1, b1] = color1;
+    var [r2, g2, b2] = color2;
+    return [(r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2];
 };
