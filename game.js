@@ -364,6 +364,7 @@ var loadImages = function (callback) {
 };
 
 var loadLevel = function (level) {
+    KeyPress=0;
     console.log("loading level " + level);
     ci = level;
     levels[ci] = Level.parse(leveldata[ci]);
