@@ -371,7 +371,7 @@ var loadLevels = function (callback) {
     leveldata = [];
     levels = [];
     (function next(i) {
-        if (i < 7) {
+        if (i < 8) {
             $.get(`levels/${i}.txt`, function (data) {
                 var level = Level.parse(data);
                 leveldata.push(data);
@@ -422,7 +422,7 @@ var init = function () {
     bgm.bgm.play();
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
-    ci = 0;
+    ci = 7;
     keys = Array(256).fill(false);
 
     var tasks = [loadImages, loadLevels];
