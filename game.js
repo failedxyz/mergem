@@ -11,20 +11,24 @@ class LevelMap {
     static parse(mapdata, metadata) {
         var lines = mapdata.split(/\r?\n/g).map(function (line) { return line.replace(/~+$/, ""); }).filter(function (line) { return line.length > 0; });
         var maparray = [];
-        for (var y = 0; y < lines.length; y += 1) {
+        for (var y = 0; y < lines.length; ++y) {
             var line = lines[y];
             var row = [];
-            for (var x = 0; x < line.length; x += 1) {
+            for (var x = 0; x < line.length; ++x) {
                 metadata.coordinates = [x, y];
                 row.push(Tile.create(line.charAt(x), metadata));
             }
             maparray.push(row);
         }
-        var map = new LevelMap(maparray);
+        var map = new LevelMap(maparray, metadata);
         return map;
     }
-    constructor(array) {
+    constructor(array, metadata) {
         this.tilemap = array;
+        this.characters = [null];
+        for (var i = 1; i <= metadata.characters; ++i) {
+            this.characters.push(new Character());
+        }
         this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
     }
     render(rCanvas) {
@@ -35,6 +39,19 @@ class LevelMap {
                 rCanvas = row[x].render(rCanvas);
             }
         }
+        for (var i = 1; i < this.characters.length; ++i) {
+
+        }
+        return rCanvas;
+    }
+}
+
+class Character {
+    constructor() {
+
+    }
+    render(rCanvas) {
+        var ctx = rCanvas.getContext("2d");
         return rCanvas;
     }
 }
