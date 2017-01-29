@@ -74,7 +74,7 @@ class SwitchTile extends ActionTile {
             if (level.map.characters[i] === null) continue;
             level.map.characters[i].controlled = (controlled >> i) & 1;
         }
-        console.log(controlled);
+        sfx.merge.play();
         if (this.singleUse) {
             this.disable();
         }
@@ -88,6 +88,7 @@ class ExitTile extends ActionTile {
     }
     action(character) {
         if (numPlayers() == 1) {
+            sfx.end.play();
             ci += 1;
             loadLevel(ci);
         }
@@ -105,7 +106,9 @@ class PortalTile extends ActionTile {
             var destination = level.map.portalLookup[key];
             var id = destination.id;
             if (level.map.portalConnections[id].times !== 0) {
+                sfx.portal.play();
                 [character.x, character.y] = destination.dest;
+                [character.displayx, character.displayy] = destination.dest;
                 level.map.portalConnections[id].times -= 1;
                 if (level.map.portalConnections[id].times === 0) {
                     for (var [x, y] of level.map.portalConnections[id].portals) {

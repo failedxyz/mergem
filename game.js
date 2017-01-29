@@ -56,7 +56,6 @@ class LevelMap {
         var portalLookup = {};
         if (metadata.portals) {
             for (var portal of metadata.portals) {
-                console.log(portal);
                 var [x1, y1, x2, y2, n] = portal.split(",");
                 [x1, y1, x2, y2, n] = [x1, y1, x2, y2, n].map(unretardedParseInt);
                 var tile1 = this.tilemap[y1][x1];
@@ -96,7 +95,6 @@ class LevelMap {
             var dist = Math.pow(Math.pow(char.x - avgx, 2) + Math.pow(char.y - avgy, 2), 0.5);
             if (dist > maxDist) maxDist = dist;
         }
-        //console.log(avgx, avgy, maxDist);
 
         maxDist *= TILE_SIZE;
 
@@ -135,8 +133,8 @@ class LevelMap {
                 }
             }
             if (collides) {
+                sfx.merge.play();
                 var mergedColor = mergeColors(this.characters[i].color, this.characters[j].color);
-                console.log(mergedColor);
                 this.characters[j] = null;
                 this.characters[i].color = mergedColor;
                 this.characters[i].image = tint(imageLibrary.sprite, mergedColor);
@@ -221,7 +219,10 @@ class Character {
         }
         var tile = this.currentTile();
         if (tile instanceof IceTile) {
+            sfx.ice.play();
             this.momentum = direction;
+        } else {
+            sfx.step.play();
         }
         if (tile instanceof ActionTile) {
             tile.action(this);
@@ -417,9 +418,10 @@ var loadLevel = function (level) {
 };
 
 var init = function () {
+    bgm.bgm.play();
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
-    ci = 4;
+    ci = 0;
     keys = Array(256).fill(false);
 
     var tasks = [loadImages, loadLevels];

@@ -8,6 +8,20 @@ var rawCtx;
 var controlled;
 var imageLibrary;
 
+var sfx = {
+    merge: new Howl({ src: ['assets/merge.mp3'] } ),
+    step: new Howl({ src: ['assets/step.mp3'], volume: 0.5 } ),
+    ice: new Howl({ src: ['assets/ice.mp3'], volume: 0.5 } ),
+    portal: new Howl({ src: ['assets/portal.mp3'] } ),
+    end: new Howl({ src: ['assets/end.mp3'] } ),
+    switch: new Howl( { src: ['assets/switch.wav'] } )
+};
+
+var bgm = {
+    bgm: new Audio('assets/bgm.mp3'),
+    endgame: new Audio('assets/endgame.mp3')
+};
+
 var numPlayers = function () {
     var level = levels[ci];
     return level.map.characters.filter(function (character) { return character !== null; }).length;
