@@ -11,7 +11,11 @@ const DIRECTION_LEFT = 3;
 const DIRECTION_RIGHT = 4;
 
 const CHARACTER_SIZE = 96;
+<<<<<<< HEAD
 const NUM_LEVELS = 9;
+=======
+const NUM_LEVELS = 8;
+>>>>>>> fce06bed9dcaafa3c5b270a7ef031f868d7d60ce
 
 var cameraFocus;
 var cameraTargetFocus;
@@ -100,7 +104,7 @@ class LevelMap {
 
         maxDist *= TILE_SIZE;
 
-        this.targetzoom = Math.min(1, Math.max(0.2, 0.3 * rawCanvas.height / maxDist));
+        this.targetzoom = Math.min(1, Math.max(0.2, 0.2 * rawCanvas.height / maxDist));
 
         cameraTargetFocus = [avgx * TILE_SIZE + CHARACTER_SIZE / 2, avgy * TILE_SIZE + CHARACTER_SIZE / 2];
         if (!cameraFocus) cameraFocus = cameraTargetFocus;
@@ -195,6 +199,7 @@ class Character {
                 tile = map[this.y][this.x + 1];
                 break;
         }
+        if (this.momentum && !(this.currentTile() instanceof IceTile)) return false;
         return !(tile instanceof WallTile);
     }
     startMove(direction) {
@@ -370,6 +375,10 @@ var loadLevel = function (level) {
     rawCanvas = document.createElement("canvas");
     [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
     rawCtx = rawCanvas.getContext("2d");
+    controlled = 0;
+    levels[ci].map.characters.forEach(function (char) {
+        if (char) char.controlled = false;
+    });
     for (var j = 0; j < levels[ci].metadata.control.length; ++j) {
         controlled |= (1 << levels[ci].metadata.control[j]);
         levels[ci].map.characters[levels[ci].metadata.control[j]].controlled = true;
@@ -419,6 +428,7 @@ class MainMenuState extends State {
             stateMachine.push(new GameState());
         } else if (isInside(mx, my, ...this.helpBtn)) {
             sfx.menuhit.play();
+            stateMachine.push(new HelpState());
         }
     }
     render() {
@@ -518,6 +528,23 @@ class EndgameState extends State {
         ctx.font = "90px 'Alfa Slab One'";
         ctx.fillStyle = "#ffffff";
         ctx.fillText(message, (GWIDTH - ctx.measureText(message).width) / 2, 200);
+    }
+}
+
+class HelpState extends State {
+    update() {
+        if (keys[27]) {
+            stateMachine.pop();
+            keys[27] = false;
+        }
+    }
+    render() {
+        ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
+
+        var message = "wasd to move, r to reset, esc to go back";
+        ctx.font = "20px 'Alfa Slab One'";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(message, 40, 200);
     }
 }
 

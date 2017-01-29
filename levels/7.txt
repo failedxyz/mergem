@@ -19,9 +19,13 @@ symtable:
   '%': ice
   "e": exit
   "p": portal
+<<<<<<< HEAD
   "s": switch
+=======
+  's': switch
+>>>>>>> fce06bed9dcaafa3c5b270a7ef031f868d7d60ce
 portals:
-  7,9,10,1,1
-  17,9,21,1,1
-  27,9,30,1,1
+  - 7,9,10,1,1
+  - 17,9,21,1,1
+  - 27,9,30,1,1
 
