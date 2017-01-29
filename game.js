@@ -100,7 +100,7 @@ class LevelMap {
 
         maxDist *= TILE_SIZE;
 
-        this.targetzoom = Math.min(1, Math.max(0.2, 0.3 * rawCanvas.height / maxDist));
+        this.targetzoom = Math.min(1, Math.max(0.2, 0.2 * rawCanvas.height / maxDist));
 
         cameraTargetFocus = [avgx * TILE_SIZE + CHARACTER_SIZE / 2, avgy * TILE_SIZE + CHARACTER_SIZE / 2];
         if (!cameraFocus) cameraFocus = cameraTargetFocus;
@@ -195,6 +195,7 @@ class Character {
                 tile = map[this.y][this.x + 1];
                 break;
         }
+        if (this.momentum && !(this.currentTile() instanceof IceTile)) return false;
         return !(tile instanceof WallTile);
     }
     startMove(direction) {
@@ -371,6 +372,9 @@ var loadLevel = function (level) {
     [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
     rawCtx = rawCanvas.getContext("2d");
     controlled = 0;
+    levels[ci].map.characters.forEach(function (char) {
+        if (char) char.controlled = false;
+    });
     for (var j = 0; j < levels[ci].metadata.control.length; ++j) {
         controlled |= (1 << levels[ci].metadata.control[j]);
         levels[ci].map.characters[levels[ci].metadata.control[j]].controlled = true;
@@ -558,7 +562,7 @@ var init = function () {
     bgm.bgm.play();
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
-    ci = 0;
+    ci = 7;
     keys = Array(256).fill(false);
     stateMachine = new StateMachine();
     stateMachine.push(new MainMenuState());
