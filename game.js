@@ -516,8 +516,19 @@ class EndgameState extends State {
     constructor() {
         super();
         bgm.bgm.pause();
+        bgm.bgm.currentTime = 0;
         bgm.endgame.play();
         sfx.applause.play();
+    }
+    update() {
+        if (keys[27]) {
+            bgm.endgame.pause();
+            bgm.endgame.currentTime = 0;
+            bgm.bgm.play();
+            stateMachine.pop();
+            stateMachine.pop();
+            keys[27] = false;
+        }
     }
     render() {
         ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
