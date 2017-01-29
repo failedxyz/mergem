@@ -1,11 +1,11 @@
 const TILE_SIZE = 128;
 
 imageLibrary = {
-    floor: "/assets/floor.png",
-    space: "/assets/space.png",
-    sprite: "/assets/sprite.png",
-    switch: "/assets/switch.png",
-    wall: "/assets/wall.png",
+    floor: "assets/floor.png",
+    space: "assets/space.png",
+    sprite: "assets/sprite.png",
+    switch: "assets/switch.png",
+    wall: "assets/wall.png",
 };
 
 class Tile {
