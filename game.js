@@ -13,6 +13,7 @@ const CHARACTER_SIZE = 96;
 
 var cameraFocus;
 var cameraTargetFocus;
+var customzoom = false;
 
 class LevelMap {
     static parse(mapdata, metadata) {
@@ -81,8 +82,10 @@ class LevelMap {
     }
     update() {
         this.zoom += (this.targetzoom - this.zoom) / 8;
-        cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 8;
-        cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 8;
+        if (!customzoom) {
+            cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 24;
+            cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 24;
+        }
         for (var i = 1; i < this.characters.length; ++i) {
             var character = this.characters[i];
             character.update();
@@ -109,6 +112,7 @@ class Character {
         this.x = x;
         this.y = y;
         this.direction = 0;
+        this.controlled = false;
     }
     canMove(direction) {
         var map = levels[ci].map.tilemap;
@@ -202,7 +206,13 @@ class Character {
         } */
     }
     render() {
+        rawCtx.save();
+        if (this.controlled) {
+            rawCtx.shadowBlur = 50;
+            rawCtx.shadowColor = rgbArrayToString(this.color);
+        }
         rawCtx.drawImage(this.image, this.x * TILE_SIZE + (TILE_SIZE - CHARACTER_SIZE) / 2, this.y * TILE_SIZE + (TILE_SIZE - CHARACTER_SIZE) / 2, CHARACTER_SIZE, CHARACTER_SIZE);
+        rawCtx.restore();
     }
 }
 
@@ -225,6 +235,7 @@ class Level {
 var attemptMove = function (direction) {
     var level = levels[ci];
     if (!moving) {
+        customzoom = false;
         moving = true;
         for (var i = 1; i < level.map.characters.length; i += 1) {
             var character = level.map.characters[i];
@@ -237,7 +248,7 @@ var attemptMove = function (direction) {
 
 var update = function () {
     var level = levels[ci];
-    level.map.updateCamera();
+    if (!customzoom) level.map.updateCamera();
     if (keys[87] || keys[38]) {
         attemptMove(DIRECTION_UP);
         keys[87] = keys[38] = false;
@@ -326,6 +337,7 @@ var init = function () {
             rawCtx = rawCanvas.getContext("2d");
             for (var j = 0; j < levels[ci].metadata.control.length; ++j) {
                 controlled |= (1 << levels[ci].metadata.control[j]);
+                levels[ci].map.characters[levels[ci].metadata.control[j]].controlled = true;
             }
             requestAnimationFrame(frame);
         }
@@ -341,6 +353,7 @@ var keyup = function (event) {
 };
 
 var mousewheel = function (event) {
+    customzoom = true;
     levels[ci].map.targetzoom += (event.wheelDelta || -event.detail) / 1200;
     levels[ci].map.targetzoom = Math.max(0.2, Math.min(1, levels[ci].map.targetzoom));
 };

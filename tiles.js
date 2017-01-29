@@ -64,6 +64,9 @@ class SwitchTile extends ActionTile {
         }
         console.log(controlled, touchingSwitch);
         controlled = (~touchingSwitch) & ~(~0 << level.map.characters.length);
+        for (var i = 1; i < level.map.characters.length; ++i) {
+            level.map.characters[i].controlled = (controlled >> i) & 1;
+        }
         console.log(controlled);
         if (this.singleUse) {
             this.disable();
