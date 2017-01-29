@@ -7,11 +7,9 @@ var imageLibrary = imageLibrary || {};
 const GWIDTH = 1280, GHEIGHT = 720;
 var zoom = 0.6;
 
-var GameCamera = function() {};
-var Level = function() {};
 class LevelMap {
     static parse(mapdata, metadata) {
-        var lines = mapdata.split(/\r?\n/g).map(function(line) { return line.replace(/~+$/, ""); }).filter(function(line) { return line.length > 0; });
+        var lines = mapdata.split(/\r?\n/g).map(function (line) { return line.replace(/~+$/, ""); }).filter(function (line) { return line.length > 0; });
         var maparray = [];
         for (var y = 0; y < lines.length; y += 1) {
             var line = lines[y];
@@ -26,7 +24,6 @@ class LevelMap {
         return map;
     }
     constructor(array) {
-        super();
         this.tilemap = array;
         this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
     }
@@ -42,21 +39,23 @@ class LevelMap {
     }
 }
 
-Level.parse = function(data) {
-     var parts = data.split("jason lu plays eroge everyday");
-     if (parts.length != 2) {
-         // fuck you
-     }
-     var [map, metadata] = parts;
-     var level = new Level();
+class Level {
+    static parse(data) {
+        var parts = data.split("jason lu plays eroge everyday");
+        if (parts.length != 2) {
+            // fuck you
+        }
+        var [map, metadata] = parts;
+        var level = new Level();
 
-     level.metadata = jsyaml.load(metadata);
-     level.map = LevelMap.parse(map, level.metadata);
+        level.metadata = jsyaml.load(metadata);
+        level.map = LevelMap.parse(map, level.metadata);
 
-     return level;
-};
+        return level;
+    }
+}
 
-var render = function() {
+var render = function () {
     var ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
     var level = levels[ci];
@@ -80,12 +79,12 @@ var frame = function () {
     requestAnimationFrame(frame);
 };
 
-var loadLevels = function(callback) {
+var loadLevels = function (callback) {
     console.log("loading levels...");
     levels = [];
     (function next(i) {
         if (i < 1) {
-            $.get(`/levels/${i}.txt`, function(data) {
+            $.get(`/levels/${i}.txt`, function (data) {
                 levels.push(Level.parse(data));
                 next(i + 1);
             });
@@ -95,7 +94,7 @@ var loadLevels = function(callback) {
     })(0);
 };
 
-var loadImages = function(callback) {
+var loadImages = function (callback) {
     console.log("loading assets...");
     var keys = Object.keys(imageLibrary);
     (function next(i) {
@@ -104,7 +103,7 @@ var loadImages = function(callback) {
             var path = imageLibrary[key];
             var el = new Image();
             el.src = path;
-            el.onload = function() {
+            el.onload = function () {
                 next(i + 1);
             };
             imageLibrary[key] = el;
@@ -122,7 +121,7 @@ var init = function () {
     var tasks = [loadImages, loadLevels];
     (function next(i) {
         if (i < tasks.length) {
-            tasks[i](function(){
+            tasks[i](function () {
                 next(i + 1);
             });
         } else {
@@ -135,11 +134,11 @@ var init = function () {
     })(0);
 };
 
-var keydown = function(event) {
+var keydown = function (event) {
     keys[event.keyCode] = true;
 };
 
-var keyup = function(event) {
+var keyup = function (event) {
     keys[event.keyCode] = false;
 };
 
