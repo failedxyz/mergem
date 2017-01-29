@@ -42,6 +42,10 @@ class LevelMap {
         this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
     }
     adjustZoom() {
+        var avgx = avgy = 0;
+        this.characters.forEach(function(char) {
+            
+        });
     }
     update() {
         this.zoom += (this.targetzoom - this.zoom) / 8;
