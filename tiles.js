@@ -3,7 +3,7 @@ const TILE_SIZE = 128;
 imageLibrary = {
     floor: "assets/floor.png",
     space: "assets/space.png",
-    sprite: "assets/sprite.png",
+    sprite: "assets/sprite1.png",
     switch: "assets/switch.png",
     wall: "assets/wall.png",
 };
