@@ -79,8 +79,10 @@ class ExitTile extends ActionTile {
         this.tileImage = tint(imageLibrary.floor, [102, 204, 0]);
     }
     action() {
-        ci += 1;
-        loadLevel(ci);
+        if (numPlayers() == 1) {
+            ci += 1;
+            loadLevel(ci);
+        }
     }
 }
 
