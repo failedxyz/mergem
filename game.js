@@ -28,6 +28,7 @@ class LevelMap {
     }
     constructor(array, characters, metadata) {
         this.zoom = 0.8;
+        this.targetzoom = 0.8;
         this.tilemap = array;
         this.characters = characters;
         this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
@@ -35,6 +36,7 @@ class LevelMap {
     adjustZoom() {
     }
     update() {
+        this.zoom += (this.targetzoom - this.zoom) / 8;
     }
     render() {
         for (var y = 0; y < this.tilemap.length; ++y) {
@@ -175,6 +177,7 @@ var init = function () {
             canvas.focus();
             window.onkeydown = keydown;
             window.onkeyup = keyup;
+            window.onmousewheel = mousewheel;
 
             rawCanvas = document.createElement("canvas");
             [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
@@ -190,6 +193,11 @@ var keydown = function (event) {
 
 var keyup = function (event) {
     keys[event.keyCode] = false;
+};
+
+var mousewheel = function (event) {
+    levels[ci].map.targetzoom += (event.wheelDelta || -event.detail) / 1200;
+    levels[ci].map.targetzoom = Math.max(0.2, Math.min(1, levels[ci].map.targetzoom));
 };
 
 window.onload = init;
