@@ -45,17 +45,21 @@ class LevelMap {
     }
     updateCamera() {
         var avgx = 0, avgy = 0;
-        for (var i of controlled) {
+        var controlledArray = [];
+        for (var i = 1; i < this.characters.length; ++i) {
             var char = this.characters[i];
-            avgx += char.x;
-            avgy += char.y;
+            if ((controlled >> i) & 1) {
+                controlledArray.push(i);
+                avgx += char.x;
+                avgy += char.y;
+            }
         }
-        avgx /= controlled.length;
-        avgy /= controlled.length;
+        avgx /= controlledArray.length;
+        avgy /= controlledArray.length;
 
         var maxDist = 0;
 
-        for (var i of controlled) {
+        for (var i of controlledArray) {
             var char = this.characters[i];
             var dist = Math.pow(Math.pow(char.x - avgx, 2) + Math.pow(char.y - avgy, 2), 0.5);
             if (dist > maxDist) maxDist = dist;
