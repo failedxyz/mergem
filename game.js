@@ -232,9 +232,6 @@ class Character {
     update() {
         if (!(this.currentTile() instanceof IceTile)) {
             this.momentum = 0;
-            if (this.direction === 0) {
-                moving = false;
-            }
         }
         if (this.direction) {
             var arrived = false;
@@ -407,6 +404,7 @@ var loadImages = function (callback) {
 var loadLevel = function (level) {
     KeyPress = 0;
     console.log("loading level " + level);
+    moving = false;
     ci = level;
     levels[ci] = Level.parse(leveldata[ci]);
     rawCanvas = document.createElement("canvas");
