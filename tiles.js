@@ -34,14 +34,40 @@ class ActionTile extends Tile {
     constructor(x, y) {
         super(x, y);
     }
+    action() { }
 }
 
 class SwitchTile extends ActionTile {
     constructor(x, y) {
         super(x, y);
         this.tileImage = imageLibrary.switch;
+        this.used = false;
+        this.singleUse = true;
+        this.disabled = false;
+    }
+    disable() {
+        this.tileImage = imageLibrary.floor;
+        this.disabled = true;
     }
     action() {
+        var level = levels[ci];
+        if (this.disabled) {
+            return;
+        }
+        var touchingSwitch = 0;
+        for (var i = 1; i < level.map.characters.length; ++i) {
+            var tile = level.map.characters[i].currentTile();
+            if (tile instanceof SwitchTile && !tile.disabled) {
+                touchingSwitch |= 1 << i;
+                tile.disable();
+            }
+        }
+        console.log(controlled, touchingSwitch);
+        controlled = (~touchingSwitch) & ~(~0 << level.map.characters.length);
+        console.log(controlled);
+        if (this.singleUse) {
+            this.disable();
+        }
     }
 }
 
@@ -72,5 +98,9 @@ class WallTile extends Tile {
 
 var tiledefs = {
     "floor": FloorTile,
-    "wall": WallTile
+    "switch": SwitchTile,
+    "wall": WallTile,
+    "exit": SpaceTile,
+    "ice": SpaceTile,
+    "portal": SpaceTile,
 };

@@ -16,4 +16,4 @@ symtable:
   '#': wall
   '.': floor
   "e": exit
-  "s": switchs
+  "s": switch

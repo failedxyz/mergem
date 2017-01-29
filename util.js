@@ -4,6 +4,7 @@ var levels;
 var ci;
 var rawCanvas;
 var rawCtx;
+var controlled;
 var imageLibrary;
 
 var tint = function (img, col) {

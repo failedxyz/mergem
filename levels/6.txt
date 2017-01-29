@@ -17,8 +17,8 @@ symtable:
   '.': floor
   "e": exit
   "s": switch
-  "p": portals
- portals:
-  (27,1),(4,7),1
-  (4,7),(27,1),1
+  "p": portal
+portals:
+  - (27,1),(4,7),1
+  - (4,7),(27,1),1
   

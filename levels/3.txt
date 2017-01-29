@@ -11,7 +11,7 @@
 jason lu plays eroge everyday
 
 characters: 2
-control: [1]
+control: [1, 2]
 symtable:
   '#': wall
   '.': floor
