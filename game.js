@@ -12,6 +12,9 @@ const DIRECTION_RIGHT = 4;
 
 const CHARACTER_SIZE = 96;
 
+var cameraFocus;
+var cameraTargetFocus;
+
 class LevelMap {
     static parse(mapdata, metadata) {
         var lines = mapdata.split(/\r?\n/g).map(function (line) { return line.replace(/~+$/, ""); }).filter(function (line) { return line.length > 0; });
@@ -41,14 +44,42 @@ class LevelMap {
         this.characters = characters;
         this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
     }
-    adjustZoom() {
-        var avgx = avgy = 0;
-        this.characters.forEach(function(char) {
-            
-        });
+    updateCamera() {
+        var avgx = 0, avgy = 0;
+        for (var i of controlled) {
+            var char = this.characters[i];
+            avgx += char.x;
+            avgy += char.y;
+        }
+        avgx /= controlled.length;
+        avgy /= controlled.length;
+
+        var maxDist = 0;
+
+        for (var i of controlled) {
+            var char = this.characters[i];
+            var dist = Math.pow(Math.pow(char.x - avgx, 2) + Math.pow(char.y - avgy, 2), 0.5);
+            if (dist > maxDist) maxDist = dist;
+        }
+        //console.log(avgx, avgy, maxDist);
+
+        maxDist *= TILE_SIZE;
+
+        this.targetzoom = Math.min(1, Math.max(0.2, 0.3 * rawCanvas.height / maxDist));
+
+        cameraTargetFocus = [avgx * TILE_SIZE + CHARACTER_SIZE / 2, avgy * TILE_SIZE + CHARACTER_SIZE / 2];
+        if (!cameraFocus) cameraFocus = cameraTargetFocus;
+    }
+    getCameraFrame() {
+        var sh = this.zoom * rawCanvas.height,
+            sw = this.zoom * rawCanvas.width;
+
+        return [GWIDTH / 2 - cameraFocus[0] * this.zoom, GHEIGHT / 2 - cameraFocus[1] * this.zoom, sw, sh];
     }
     update() {
         this.zoom += (this.targetzoom - this.zoom) / 8;
+        cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 8;
+        cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 8;
         for (var i = 1; i < this.characters.length; ++i) {
             var character = this.characters[i];
             character.update();
@@ -189,6 +220,8 @@ var attemptMove = function (direction) {
 };
 
 var update = function () {
+    var level = levels[ci];
+    level.map.updateCamera();
     if (keys[87] || keys[38]) {
         attemptMove(DIRECTION_UP);
         keys[87] = keys[38] = false;
@@ -202,7 +235,6 @@ var update = function () {
         attemptMove(DIRECTION_RIGHT);
         keys[68] = keys[39] = false;
     }
-    var level = levels[ci];
     level.map.update();
 };
 
@@ -212,15 +244,7 @@ var render = function () {
     rawCtx.clearRect(0, 0, rawCanvas.width, rawCanvas.height);
     level.map.render();
 
-    var [sw, sh] = [rawCanvas.width * level.map.zoom, rawCanvas.height * level.map.zoom];
-    var sx = 0, sy = 0;
-    if (sw < GWIDTH) {
-        sx = (GWIDTH - sw) / 2;
-    }
-    if (sh < GHEIGHT) {
-        sy = (GHEIGHT - sh) / 2;
-    }
-    ctx.drawImage(rawCanvas, sx, sy, sw, sh);
+    ctx.drawImage(rawCanvas, ...level.map.getCameraFrame());
 };
 
 var frame = function () {
