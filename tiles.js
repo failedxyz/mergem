@@ -2,6 +2,7 @@ const TILE_SIZE = 128;
 
 imageLibrary = {
     floor: "assets/floor.png",
+    ice: "assets/ice.png",
     portal: "assets/portal.png",
     space: "assets/space.png",
     sprite: "assets/sprite.png",
@@ -121,6 +122,12 @@ class PortalTile extends ActionTile {
         }
     }
 }
+class IceTile extends Tile {
+    constructor(x, y) {
+        super(x, y);
+        this.tileImage = imageLibrary.ice;
+    }
+}
 class FloorTile extends Tile {
     constructor(x, y) {
         super(x, y);
@@ -147,10 +154,10 @@ class WallTile extends Tile {
 }
 
 var tiledefs = {
+    "exit": ExitTile,
     "floor": FloorTile,
+    "ice": IceTile,
+    "portal": PortalTile,
     "switch": SwitchTile,
     "wall": WallTile,
-    "exit": ExitTile,
-    "ice": SpaceTile,
-    "portal": PortalTile,
 };
