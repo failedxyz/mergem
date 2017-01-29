@@ -39,6 +39,14 @@ class LevelMap {
     }
 }
 
+class Character {
+    render(rCanvas) {
+        var ctx = rCanvas.getContext("2d");
+        
+        return rCanvas;
+    }
+}
+
 class Level {
     static parse(data) {
         var parts = data.split("jason lu plays eroge everyday");
