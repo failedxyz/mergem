@@ -15,13 +15,16 @@ var cameraFocus;
 var cameraTargetFocus;
 var customzoom = false;
 
-var KeyPress=0;
+var KeyPress = 0;
+var unretardedParseInt = function (x) {
+    return parseInt(x.trim());
+};
 
 class LevelMap {
     static parse(mapdata, metadata) {
         var lines = mapdata.split(/\r?\n/g).map(function (line) { return line.replace(/~+$/, ""); }).filter(function (line) { return line.length > 0; });
         var maparray = [];
-        var characters = [null];
+        var characters = [];
         var colors_temp = COLORS.slice(0);
         for (var y = 0; y < lines.length; ++y) {
             var line = lines[y];
@@ -32,11 +35,16 @@ class LevelMap {
                 var tile = Tile.create(char, metadata);
                 row.push(tile);
                 if (tile instanceof SpawnTile) {
-                    characters.push(new Character(colors_temp.shift(), x, y));
+                    var number = parseInt(line.charAt(x));
+                    characters.push(new Character(number, colors_temp.shift(), x, y));
                 }
             }
             maparray.push(row);
         }
+        characters.sort(function (a, b) {
+            return a.number - b.number;
+        });
+        characters.unshift(null);
         var map = new LevelMap(maparray, characters, metadata);
         return map;
     }
@@ -44,14 +52,33 @@ class LevelMap {
         this.zoom = this.targetzoom = 0.5;
         this.tilemap = array;
         this.characters = characters;
-        this.size = [Math.max.apply(null, array.map((o) => { return o.length;})) * TILE_SIZE, array.length * TILE_SIZE];
+        var portalConnections = [];
+        var portalLookup = {};
+        if (metadata.portals) {
+            for (var portal of metadata.portals) {
+                console.log(portal);
+                var [x1, y1, x2, y2, n] = portal.split(",");
+                [x1, y1, x2, y2, n] = [x1, y1, x2, y2, n].map(unretardedParseInt);
+                var tile1 = this.tilemap[y1][x1];
+                if (!(tile1 instanceof PortalTile)) continue;
+                var tile2 = this.tilemap[y2][x2];
+                if (!(tile2 instanceof PortalTile)) continue;
+
+                portalLookup[`${x1},${y1}`] = { dest: [x2, y2], id: portalConnections.length };
+                portalLookup[`${x2},${y2}`] = { dest: [x1, y1], id: portalConnections.length };
+                portalConnections.push({ portals: [[x1, y1], [x2, y2]], times: n });
+            }
+        }
+        this.portalConnections = portalConnections;
+        this.portalLookup = portalLookup;
+        this.size = [Math.max.apply(null, array.map((o) => { return o.length; })) * TILE_SIZE, array.length * TILE_SIZE];
     }
     updateCamera() {
-        var i;
+        var i, char;
         var avgx = 0, avgy = 0;
         var controlledArray = [];
         for (i = 1; i < this.characters.length; ++i) {
-            var char = this.characters[i];
+            char = this.characters[i];
             if (char === null) continue;
             if ((controlled >> i) & 1) {
                 controlledArray.push(i);
@@ -65,7 +92,7 @@ class LevelMap {
         var maxDist = 0.1;
 
         for (i of controlledArray) {
-            var char = this.characters[i];
+            char = this.characters[i];
             var dist = Math.pow(Math.pow(char.x - avgx, 2) + Math.pow(char.y - avgy, 2), 0.5);
             if (dist > maxDist) maxDist = dist;
         }
@@ -118,7 +145,7 @@ class LevelMap {
                 controlled &= ~Math.pow(2, j);
                 var tile = this.characters[i].currentTile();
                 if (tile instanceof ExitTile) {
-                    tile.action();
+                    tile.action(this.characters[i]);
                 }
             }
         }
@@ -139,7 +166,8 @@ class LevelMap {
 }
 
 class Character {
-    constructor(color, x, y) {
+    constructor(number, color, x, y) {
+        this.number = number;
         this.color = color;
         this.image = tint(imageLibrary.sprite, color);
         this.x = x;
@@ -189,7 +217,7 @@ class Character {
         }
         var tile = map[this.y][this.x];
         if (tile instanceof ActionTile) {
-            tile.action();
+            tile.action(this);
         }
         moving = false;
         return true;
@@ -313,10 +341,10 @@ var render = function () {
     level.map.render();
 
     ctx.drawImage(rawCanvas, ...level.map.getCameraFrame());
-    ctx.font="30px 'Alfa Slab One'";
+    ctx.font = "30px 'Alfa Slab One'";
     ctx.fillStyle = '#fff';
-    ctx.fillText("Level "+(ci+1),50,50);
-    ctx.fillText("Steps Taken: " + KeyPress,1000,50);
+    ctx.fillText("Level " + (ci + 1), 50, 50);
+    ctx.fillText("Steps Taken: " + KeyPress, 1000, 50);
 
 };
 
@@ -364,7 +392,7 @@ var loadImages = function (callback) {
 };
 
 var loadLevel = function (level) {
-    KeyPress=0;
+    KeyPress = 0;
     console.log("loading level " + level);
     ci = level;
     levels[ci] = Level.parse(leveldata[ci]);
@@ -380,7 +408,7 @@ var loadLevel = function (level) {
 var init = function () {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
-    ci = 0;
+    ci = 6;
     keys = Array(256).fill(false);
 
     var tasks = [loadImages, loadLevels];

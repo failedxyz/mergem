@@ -2,6 +2,7 @@ const TILE_SIZE = 128;
 
 imageLibrary = {
     floor: "assets/floor.png",
+    portal: "assets/portal.png",
     space: "assets/space.png",
     sprite: "assets/sprite.png",
     switch: "assets/switch.png",
@@ -34,7 +35,7 @@ class ActionTile extends Tile {
     constructor(x, y) {
         super(x, y);
     }
-    action() { }
+    action(character) { }
 }
 
 class SwitchTile extends ActionTile {
@@ -49,7 +50,7 @@ class SwitchTile extends ActionTile {
         this.tileImage = imageLibrary.floor;
         this.disabled = true;
     }
-    action() {
+    action(character) {
         var i;
         if (numPlayers() == 1) {
             return this.disable();
@@ -84,14 +85,42 @@ class ExitTile extends ActionTile {
         super(x, y);
         this.tileImage = tint(imageLibrary.floor, [102, 204, 0]);
     }
-    action() {
+    action(character) {
         if (numPlayers() == 1) {
             ci += 1;
             loadLevel(ci);
         }
     }
 }
-
+class PortalTile extends ActionTile {
+    constructor(x, y) {
+        super(x, y);
+        this.tileImage = imageLibrary.portal;
+    }
+    action(character) {
+        var level = levels[ci];
+        var key = `${this.x},${this.y}`;
+        if (key in level.map.portalLookup) {
+            var destination = level.map.portalLookup[key];
+            var id = destination.id;
+            if (level.map.portalConnections[id].times !== 0) {
+                [character.x, character.y] = destination.dest;
+                level.map.portalConnections[id].times -= 1;
+                if (level.map.portalConnections[id].times === 0) {
+                    for (var [x, y] of level.map.portalConnections[id].portals) {
+                        level.map.tilemap[y][x].disabled = true;
+                    }
+                }
+            }
+        }
+    }
+    render() {
+        rawCtx.drawImage(imageLibrary.floor, this.x * TILE_SIZE, this.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        if (!this.disabled) {
+            rawCtx.drawImage(this.tileImage, this.x * TILE_SIZE, this.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        }
+    }
+}
 class FloorTile extends Tile {
     constructor(x, y) {
         super(x, y);
@@ -123,5 +152,5 @@ var tiledefs = {
     "wall": WallTile,
     "exit": ExitTile,
     "ice": SpaceTile,
-    "portal": SpaceTile,
+    "portal": PortalTile,
 };
