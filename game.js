@@ -96,13 +96,13 @@ class LevelMap {
 
         for (i of controlledArray) {
             char = this.characters[i];
-            var dist = Math.pow(Math.pow(char.x - avgx, 2) + Math.pow(char.y - avgy, 2), 0.5);
+            var dist = Math.sqrt(Math.pow(char.x - avgx, 2) + Math.pow(char.y - avgy, 2));
             if (dist > maxDist) maxDist = dist;
         }
 
         maxDist *= TILE_SIZE;
 
-        this.targetzoom = Math.min(1, Math.max(0.2, 0.2 * rawCanvas.height / maxDist));
+        this.targetzoom = Math.min(1, Math.pow(0.2 * rawCanvas.width / maxDist + 1, 1 / 3) - 1);
 
         cameraTargetFocus = [avgx * TILE_SIZE + CHARACTER_SIZE / 2, avgy * TILE_SIZE + CHARACTER_SIZE / 2];
         if (!cameraFocus) cameraFocus = cameraTargetFocus;
