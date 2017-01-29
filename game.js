@@ -365,7 +365,7 @@ var loadLevel = function (level) {
     rawCtx = rawCanvas.getContext("2d");
     for (var j = 0; j < levels[ci].metadata.control.length; ++j) {
         controlled |= (1 << levels[ci].metadata.control[j]);
-        levels[ci].map.characters[levels[ci].metadata.control[j]] = true;
+        levels[ci].map.characters[levels[ci].metadata.control[j]].controlled = true;
     }
 };
 
