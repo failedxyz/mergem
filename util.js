@@ -35,7 +35,7 @@ var tint = function (img, col) {
 };
 
 var rgbArrayToString = function (arr) {
-    return `rgb(${arr[0]}, ${arr[1]}, ${arr[2]})`;
+    return `rgb(${parseInt(arr[0])}, ${parseInt(arr[1])}, ${parseInt(arr[2])})`;
 };
 
 var mergeColors = function (color1, color2) {
