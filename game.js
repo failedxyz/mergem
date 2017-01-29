@@ -55,6 +55,7 @@ class LevelMap {
         this.zoom = this.targetzoom = 0.5;
         this.tilemap = array;
         this.characters = characters;
+        this.metadata = metadata;
         var portalConnections = [];
         var portalLookup = {};
         if (metadata.portals) {
@@ -155,9 +156,10 @@ class LevelMap {
         }
     }
     render() {
-        for (var y = 0; y < this.tilemap.length; ++y) {
+        var x, y;
+        for (y = 0; y < this.tilemap.length; ++y) {
             var row = this.tilemap[y];
-            for (var x = 0; x < row.length; ++x) {
+            for (x = 0; x < row.length; ++x) {
                 row[x].render();
             }
         }
@@ -165,6 +167,15 @@ class LevelMap {
             var character = this.characters[i];
             if (character === null) continue;
             character.render();
+        }
+        if (this.metadata.helptext) {
+            for (var coordinates in this.metadata.helptext) {
+                [x, y] = coordinates.split(",").map(unretardedParseInt);
+                var text = this.metadata.helptext[coordinates];
+                rawCtx.fillStyle = "#fff";
+                rawCtx.font = "60px sans-serif";
+                rawCtx.fillText(text, x * TILE_SIZE, y * TILE_SIZE + 80);
+            }
         }
     }
 }
@@ -523,10 +534,11 @@ class EndgameState extends State {
     }
     update() {
         if (keys[27]) {
+            ci = 0;
             sfx.menuhit.play();
             bgm.endgame.pause();
             bgm.endgame.currentTime = 0;
-            bgm.bgm.play();
+            bgm.bgm.play(); 
             stateMachine.pop();
             stateMachine.pop();
             keys[27] = false;
