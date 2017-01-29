@@ -1,5 +1,6 @@
 const GWIDTH = 1280, GHEIGHT = 720;
 var moving = false;
+var stateMachine;
 
 const COLORS = [[0, 102, 204], [204, 0, 102], [102, 204, 0]];
 const INTERVAL = 0.25;
@@ -322,50 +323,6 @@ var attemptMove = function (direction) {
     }
 };
 
-var update = function () {
-    var level = levels[ci];
-    if (!customzoom) level.map.updateCamera();
-    if (keys[87] || keys[38]) {
-        attemptMove(DIRECTION_UP);
-        keys[87] = keys[38] = false;
-    } else if (keys[83] || keys[40]) {
-        attemptMove(DIRECTION_DOWN);
-        keys[83] = keys[40] = false;
-    } else if (keys[65] || keys[37]) {
-        attemptMove(DIRECTION_LEFT);
-        keys[65] = keys[37] = false;
-    } else if (keys[68] || keys[39]) {
-        attemptMove(DIRECTION_RIGHT);
-        keys[68] = keys[39] = false;
-    }
-    if (keys[82]) {
-        sfx.retry.play();
-        loadLevel(ci);
-        keys[82] = false;
-    }
-    level.map.update();
-};
-
-var render = function () {
-    ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
-    var level = levels[ci];
-    rawCtx.clearRect(0, 0, rawCanvas.width, rawCanvas.height);
-    level.map.render();
-
-    ctx.drawImage(rawCanvas, ...level.map.getCameraFrame());
-    ctx.font = "30px 'Alfa Slab One'";
-    ctx.fillStyle = '#fff';
-    ctx.fillText("Level " + (ci + 1), 50, 50);
-    ctx.fillText("Steps Taken: " + KeyPress, 1000, 50);
-
-};
-
-var frame = function () {
-    update();
-    render();
-    requestAnimationFrame(frame);
-};
-
 var loadLevels = function (callback) {
     console.log("loading levels...");
     leveldata = [];
@@ -418,12 +375,157 @@ var loadLevel = function (level) {
     }
 };
 
+class StateMachine {
+    constructor() {
+        this.stack = [];
+    }
+    empty() {
+        return this.stack.length === 0;
+    }
+    top() {
+        if (!this.empty()) {
+            return this.stack[this.stack.length - 1];
+        }
+    }
+    push(state) {
+        if (state instanceof State) {
+            this.stack.push(state);
+        }
+    }
+    pop() {
+        return this.stack.pop();
+    }
+}
+
+class State {
+    click(event) { }
+    update() { }
+    render() { }
+}
+
+class MainMenuState extends State {
+    constructor() {
+        super();
+        this.playBtn = [440, 300, 400, 80];
+        this.helpBtn = [440, 400, 400, 80];
+    }
+    update() { }
+    click(event) {
+        var mx = event.offsetX;
+        var my = event.offsetY;
+        if (isInside(mx, my, ...this.playBtn)) {
+            sfx.menuhit.play();
+            stateMachine.push(new GameState());
+        } else if (isInside(mx, my, ...this.helpBtn)) {
+            sfx.menuhit.play();
+        }
+    }
+    render() {
+        ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
+
+        var message = "Mergem";
+        ctx.font = "120px 'Alfa Slab One'";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(message, (GWIDTH - ctx.measureText(message).width) / 2, 200);
+
+        ctx.fillStyle = "#cccccc";
+        ctx.fillRect(...this.playBtn);
+
+        message = `Play`;
+        ctx.font = "40px sans-serif";
+        ctx.fillStyle = "#000000";
+        ctx.fillText(message, (GWIDTH - ctx.measureText(message).width) / 2, 353);
+
+        ctx.fillStyle = "#cccccc";
+        ctx.fillRect(...this.helpBtn);
+
+        message = `Help`;
+        ctx.fillStyle = "#000000";
+        ctx.fillText(message, (GWIDTH - ctx.measureText(message).width) / 2, 453);
+    }
+}
+
+class GameState extends State {
+    update() {
+        var level = levels[ci];
+        if (!customzoom) level.map.updateCamera();
+        if (keys[87] || keys[38]) {
+            attemptMove(DIRECTION_UP);
+            keys[87] = keys[38] = false;
+        } else if (keys[83] || keys[40]) {
+            attemptMove(DIRECTION_DOWN);
+            keys[83] = keys[40] = false;
+        } else if (keys[65] || keys[37]) {
+            attemptMove(DIRECTION_LEFT);
+            keys[65] = keys[37] = false;
+        } else if (keys[68] || keys[39]) {
+            attemptMove(DIRECTION_RIGHT);
+            keys[68] = keys[39] = false;
+        }
+        if (keys[82]) {
+            sfx.retry.play();
+            loadLevel(ci);
+            keys[82] = false;
+        }
+        if (keys[27]) {
+            stateMachine.push(new PauseState());
+            keys[27] = false;
+        }
+        level.map.update();
+    }
+    render() {
+        ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
+        var level = levels[ci];
+        rawCtx.clearRect(0, 0, rawCanvas.width, rawCanvas.height);
+        level.map.render();
+
+        ctx.drawImage(rawCanvas, ...level.map.getCameraFrame());
+        ctx.font = "30px 'Alfa Slab One'";
+        ctx.fillStyle = '#fff';
+        ctx.fillText("Level " + (ci + 1), 50, 50);
+        ctx.fillText("Steps Taken: " + KeyPress, 1000, 50);
+    }
+}
+
+class PauseState extends State {
+    update() {
+        if (keys[27]) {
+            stateMachine.pop();
+            keys[27] = false;
+        }
+    }
+    render() {
+        ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
+
+        var message = "Game Paused";
+        ctx.font = "90px 'Alfa Slab One'";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(message, (GWIDTH - ctx.measureText(message).width) / 2, 200);
+    }
+}
+
+var frame = function () {
+    var current;
+    if (!stateMachine.empty()) {
+        current = stateMachine.top();
+        current.update();
+        current.render();
+
+        // ctx.font = "10px monospace";
+        // ctx.fillStyle = "#fff";
+        // ctx.fillText("current state: " + current.constructor.name, 15, GHEIGHT - 15);
+    }
+    requestAnimationFrame(frame);
+};
+
 var init = function () {
     bgm.bgm.play();
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
-    ci = 7;
+    ci = 0;
     keys = Array(256).fill(false);
+    stateMachine = new StateMachine();
+    stateMachine.push(new MainMenuState());
 
     var tasks = [loadImages, loadLevels];
     (function next(i) {
@@ -433,6 +535,8 @@ var init = function () {
             });
         } else {
             canvas.focus();
+
+            canvas.onclick = click;
             window.onkeydown = keydown;
             window.onkeyup = keyup;
             window.onmousewheel = mousewheel;
@@ -450,6 +554,13 @@ var keydown = function (event) {
 var keyup = function (event) {
     keys[event.keyCode] = false;
 };
+
+var click = function (event) {
+    if (!stateMachine.empty()) {
+        var current = stateMachine.top();
+        current.click(event);
+    }
+}
 
 var mousewheel = function (event) {
     customzoom = true;

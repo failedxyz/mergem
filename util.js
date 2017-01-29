@@ -9,13 +9,14 @@ var controlled;
 var imageLibrary;
 
 var sfx = {
-    merge: new Howl({ src: ['assets/merge.mp3'] } ),
-    step: new Howl({ src: ['assets/step.mp3'], volume: 0.5 } ),
-    ice: new Howl({ src: ['assets/ice.mp3'], volume: 0.5 } ),
-    portal: new Howl({ src: ['assets/portal.mp3'] } ),
-    end: new Howl({ src: ['assets/end.mp3'] } ),
-    switch: new Howl( { src: ['assets/switch.wav'] } ),
-    retry: new Howl( { src: ['assets/retry.mp3'] } )
+    menuhit: new Howl({ src: ['assets/menuhit.wav'] }),
+    merge: new Howl({ src: ['assets/merge.mp3'] }),
+    step: new Howl({ src: ['assets/step.mp3'], volume: 0.5 }),
+    ice: new Howl({ src: ['assets/ice.mp3'], volume: 0.5 }),
+    portal: new Howl({ src: ['assets/portal.mp3'] }),
+    end: new Howl({ src: ['assets/end.mp3'] }),
+    switch: new Howl({ src: ['assets/switch.wav'] }),
+    retry: new Howl({ src: ['assets/retry.mp3'] })
 };
 
 var bgm = {
@@ -57,4 +58,18 @@ var mergeColors = function (color1, color2) {
     var [r1, g1, b1] = color1;
     var [r2, g2, b2] = color2;
     return [(r1 + r2) / 2, (g1 + g2) / 2, (b1 + b2) / 2];
+};
+
+var isInside = function (x, y, z1, z2, w, h) {
+    var z3 = z1 + w;
+    var z4 = z2 + h;
+    x1 = Math.min(z1, z3);
+    x2 = Math.max(z1, z3);
+    y1 = Math.min(z2, z4);
+    y2 = Math.max(z2, z4);
+    if ((x1 <= x) && (x <= x2) && (y1 <= y) && (y <= y2)) {
+        return true;
+    } else {
+        return false;
+    }
 };
