@@ -50,12 +50,16 @@ class SwitchTile extends ActionTile {
         this.disabled = true;
     }
     action() {
+        if (numPlayers() == 1) {
+            return this.disable();
+        }
         var level = levels[ci];
         if (this.disabled) {
             return;
         }
         var touchingSwitch = 0;
         for (var i = 1; i < level.map.characters.length; ++i) {
+            if (level.map.characters[i] === null) continue;
             var tile = level.map.characters[i].currentTile();
             if (tile instanceof SwitchTile && !tile.disabled) {
                 touchingSwitch |= 1 << i;
