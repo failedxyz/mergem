@@ -2,7 +2,7 @@ const GWIDTH = 1280, GHEIGHT = 720;
 var moving = false;
 
 const COLORS = [[0, 102, 204], [204, 0, 102], [102, 204, 0]];
-// const INTERVAL = 0.5;
+const INTERVAL = 0.25;
 
 const DIRECTION_UP = 1;
 const DIRECTION_DOWN = 2;
@@ -170,8 +170,8 @@ class Character {
         this.number = number;
         this.color = color;
         this.image = tint(imageLibrary.sprite, color);
-        this.x = x;
-        this.y = y;
+        this.displayx = this.x = x;
+        this.displayy = this.y = y;
         this.direction = 0;
         this.controlled = false;
     }
@@ -227,45 +227,45 @@ class Character {
         return map[this.y][this.x];
     }
     update() {
-        /* if (this.direction) {
+        if (this.direction) {
             var arrived = false;
             switch (this.direction) {
                 case DIRECTION_UP:
-                    if (this.y <= this.targety) {
+                    if (this.displayy <= this.y) {
                         arrived = true;
                     } else {
-                        this.y -= INTERVAL;
+                        this.displayy -= INTERVAL;
                     }
                     break;
                 case DIRECTION_DOWN:
-                    if (this.y >= this.targety) {
+                    if (this.displayy >= this.y) {
                         arrived = true;
                     } else {
-                        this.y += INTERVAL;
+                        this.displayy += INTERVAL;
                     }
                     break;
                 case DIRECTION_LEFT:
-                    if (this.x <= this.targetx) {
+                    if (this.displayx <= this.x) {
                         arrived = true;
                     } else {
-                        this.x -= INTERVAL;
+                        this.displayx -= INTERVAL;
                     }
                     break;
                 case DIRECTION_RIGHT:
-                    if (this.x >= this.targetx) {
+                    if (this.displayx >= this.x) {
                         arrived = true;
                     } else {
-                        this.x += INTERVAL;
+                        this.displayx += INTERVAL;
                     }
                     break;
             }
             if (arrived) {
                 this.direction = 0;
-                this.x = this.targetx;
-                this.y = this.targety;
+                this.displayx = this.x;
+                this.displayy = this.y;
                 moving = false;
             }
-        } */
+        }
     }
     render() {
         rawCtx.save();
@@ -273,7 +273,7 @@ class Character {
             rawCtx.shadowBlur = 50;
             rawCtx.shadowColor = rgbArrayToString(this.color);
         }
-        rawCtx.drawImage(this.image, this.x * TILE_SIZE + (TILE_SIZE - CHARACTER_SIZE) / 2, this.y * TILE_SIZE + (TILE_SIZE - CHARACTER_SIZE) / 2, CHARACTER_SIZE, CHARACTER_SIZE);
+        rawCtx.drawImage(this.image, this.displayx * TILE_SIZE + (TILE_SIZE - CHARACTER_SIZE) / 2, this.displayy * TILE_SIZE + (TILE_SIZE - CHARACTER_SIZE) / 2, CHARACTER_SIZE, CHARACTER_SIZE);
         rawCtx.restore();
     }
 }
