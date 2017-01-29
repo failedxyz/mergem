@@ -1,10 +1,11 @@
 const TILE_SIZE = 128;
 
 imageLibrary = {
-    "floor": "/assets/floor.png",
-    "space": "/assets/space.png",
-    "sprite": "/assets/sprite.png",
-    "wall": "/assets/wall.png",
+    floor: "/assets/floor.png",
+    space: "/assets/space.png",
+    sprite: "/assets/sprite.png",
+    switch: "/assets/switch.png",
+    wall: "/assets/wall.png",
 };
 
 class Tile {
@@ -30,6 +31,18 @@ class Tile {
 }
 
 class ActionTile extends Tile {
+    constructor(x, y) {
+        super(x, y);
+    }
+}
+
+class SwitchTile extends ActionTile {
+    constructor(x, y) {
+        super(x, y);
+        this.tileImage = imageLibrary.switch;
+    }
+    action() {
+    }
 }
 
 class FloorTile extends Tile {
