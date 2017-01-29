@@ -62,7 +62,7 @@ class LevelMap {
         avgx /= controlledArray.length;
         avgy /= controlledArray.length;
 
-        var maxDist = 0;
+        var maxDist = 0.1;
 
         for (i of controlledArray) {
             var char = this.characters[i];
@@ -112,6 +112,7 @@ class LevelMap {
                 console.log(mergedColor);
                 this.characters[j] = null;
                 this.characters[i].color = mergedColor;
+                this.characters[i].controlled = this.controlled;
                 this.characters[i].image = tint(imageLibrary.sprite, mergedColor);
             }
         }
