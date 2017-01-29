@@ -11,6 +11,7 @@ const DIRECTION_LEFT = 3;
 const DIRECTION_RIGHT = 4;
 
 const CHARACTER_SIZE = 96;
+const NUM_LEVELS = 7;
 
 var cameraFocus;
 var cameraTargetFocus;
@@ -329,7 +330,7 @@ var loadLevels = function (callback) {
     leveldata = [];
     levels = [];
     (function next(i) {
-        if (i < 8) {
+        if (i < NUM_LEVELS) {
             $.get(`levels/${i}.txt`, function (data) {
                 var level = Level.parse(data);
                 leveldata.push(data);
@@ -503,6 +504,22 @@ class PauseState extends State {
         ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
 
         var message = "Game Paused";
+        ctx.font = "90px 'Alfa Slab One'";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(message, (GWIDTH - ctx.measureText(message).width) / 2, 200);
+    }
+}
+
+class EndgameState extends State {
+    constructor() {
+        super();
+        bgm.bgm.pause();
+        bgm.endgame.play();
+    }
+    render() {
+        ctx.clearRect(0, 0, GWIDTH, GHEIGHT);
+
+        var message = "Congratulations!";
         ctx.font = "90px 'Alfa Slab One'";
         ctx.fillStyle = "#ffffff";
         ctx.fillText(message, (GWIDTH - ctx.measureText(message).width) / 2, 200);
