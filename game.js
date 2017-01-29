@@ -1,7 +1,14 @@
 const GWIDTH = 1280, GHEIGHT = 720;
 var moving = false;
+var controlled;
 
 const COLORS = [[0, 102, 204], [204, 0, 102], [102, 204, 0]];
+const INTERVAL = 0.09;
+
+const DIRECTION_UP = 1;
+const DIRECTION_DOWN = 2;
+const DIRECTION_LEFT = 3;
+const DIRECTION_RIGHT = 4;
 
 class LevelMap {
     static parse(mapdata, metadata) {
@@ -27,8 +34,8 @@ class LevelMap {
         return map;
     }
     constructor(array, characters, metadata) {
-        this.zoom = 0.8;
-        this.targetzoom = 0.8;
+        this.zoom = 0.5;
+        this.targetzoom = 0.5;
         this.tilemap = array;
         this.characters = characters;
         this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
@@ -37,17 +44,21 @@ class LevelMap {
     }
     update() {
         this.zoom += (this.targetzoom - this.zoom) / 8;
+        for (var i = 1; i < this.characters.length; ++i) {
+            var character = this.characters[i];
+            character.update();
+        }
     }
     render() {
         for (var y = 0; y < this.tilemap.length; ++y) {
             var row = this.tilemap[y];
             for (var x = 0; x < row.length; ++x) {
-                row[x].render(rawCanvas);
+                row[x].render();
             }
         }
         for (var i = 1; i < this.characters.length; ++i) {
             var character = this.characters[i];
-            character.render(rawCanvas);
+            character.render();
         }
     }
 }
@@ -55,8 +66,91 @@ class LevelMap {
 class Character {
     constructor(color, x, y) {
         this.image = tint(imageLibrary.sprite, color);
-        this.x = x;
-        this.y = y;
+        this.targetx = this.x = x;
+        this.targety = this.y = y;
+        this.direction = 0;
+    }
+    canMove(direction) {
+        var map = levels[ci].map.tilemap;
+        var tile;
+        switch (direction) {
+            case DIRECTION_UP:
+                tile = map[this.targety - 1][this.targetx];
+                break;
+            case DIRECTION_DOWN:
+                tile = map[this.targety + 1][this.targetx];
+                break;
+            case DIRECTION_LEFT:
+                tile = map[this.targety][this.targetx - 1];
+                break;
+            case DIRECTION_RIGHT:
+                tile = map[this.targety][this.targetx + 1];
+                break;
+        }
+        console.log(tile);
+        return !(tile instanceof WallTile);
+    }
+    animateMove(direction) {
+        if (!this.canMove(direction)) {
+            moving = false;
+            return;
+        }
+        this.direction = direction;
+        switch (direction) {
+            case DIRECTION_UP:
+                this.targety -= 1;
+                break;
+            case DIRECTION_DOWN:
+                this.targety += 1;
+                break;
+            case DIRECTION_LEFT:
+                this.targetx -= 1;
+                break;
+            case DIRECTION_RIGHT:
+                this.targetx += 1;
+                break;
+        }
+    }
+    update() {
+        if (this.direction) {
+            var arrived = false;
+            switch (this.direction) {
+                case DIRECTION_UP:
+                    if (this.y <= this.targety) {
+                        arrived = true;
+                    } else {
+                        this.y -= INTERVAL;
+                    }
+                    break;
+                case DIRECTION_DOWN:
+                    if (this.y >= this.targety) {
+                        arrived = true;
+                    } else {
+                        this.y += INTERVAL;
+                    }
+                    break;
+                case DIRECTION_LEFT:
+                    if (this.x <= this.targetx) {
+                        arrived = true;
+                    } else {
+                        this.x -= INTERVAL;
+                    }
+                    break;
+                case DIRECTION_RIGHT:
+                    if (this.x >= this.targetx) {
+                        arrived = true;
+                    } else {
+                        this.x += INTERVAL;
+                    }
+                    break;
+            }
+            if (arrived) {
+                this.direction = 0;
+                this.x = this.targetx;
+                this.y = this.targety;
+                moving = false;
+            }
+        }
     }
     render() {
         rawCtx.drawImage(this.image, this.x * TILE_SIZE, this.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -79,26 +173,29 @@ class Level {
     }
 }
 
-const DIRECTION_UP = 0;
-const DIRECTION_DOWN = 0;
-const DIRECTION_LEFT = 0;
-const DIRECTION_RIGHT = 0;
-
 var attemptMove = function (direction) {
+    var level = levels[ci];
     if (!moving) {
-
+        moving = true;
+        for (var c of controlled) {
+            level.map.characters[c].animateMove(direction);
+        }
     }
 };
 
 var update = function () {
     if (keys[87] || keys[38]) {
         attemptMove(DIRECTION_UP);
+        keys[87] = keys[38] = false;
     } else if (keys[83] || keys[40]) {
         attemptMove(DIRECTION_DOWN);
+        keys[83] = keys[40] = false;
     } else if (keys[65] || keys[37]) {
         attemptMove(DIRECTION_LEFT);
+        keys[65] = keys[37] = false;
     } else if (keys[68] || keys[39]) {
         attemptMove(DIRECTION_RIGHT);
+        keys[68] = keys[39] = false;
     }
     var level = levels[ci];
     level.map.update();
@@ -182,6 +279,7 @@ var init = function () {
             rawCanvas = document.createElement("canvas");
             [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
             rawCtx = rawCanvas.getContext("2d");
+            controlled = levels[ci].metadata.control;
             requestAnimationFrame(frame);
         }
     })(0);
