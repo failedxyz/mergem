@@ -89,8 +89,12 @@ class ExitTile extends ActionTile {
     action(character) {
         if (numPlayers() == 1) {
             sfx.end.play();
-            ci += 1;
-            loadLevel(ci);
+            if (ci === levels.length - 1) {
+                stateMachine.push(new EndgameState());
+            } else {
+                ci += 1;
+                loadLevel(ci);
+            }
         }
     }
 }
