@@ -562,7 +562,7 @@ var init = function () {
     bgm.bgm.play();
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
-    ci = 7;
+    ci = 0;
     keys = Array(256).fill(false);
     stateMachine = new StateMachine();
     stateMachine.push(new MainMenuState());
