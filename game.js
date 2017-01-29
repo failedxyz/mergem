@@ -45,10 +45,12 @@ class LevelMap {
         this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
     }
     updateCamera() {
+        var i;
         var avgx = 0, avgy = 0;
         var controlledArray = [];
-        for (var i = 1; i < this.characters.length; ++i) {
+        for (i = 1; i < this.characters.length; ++i) {
             var char = this.characters[i];
+            if (char === null) continue;
             if ((controlled >> i) & 1) {
                 controlledArray.push(i);
                 avgx += char.x;
@@ -60,7 +62,7 @@ class LevelMap {
 
         var maxDist = 0;
 
-        for (var i of controlledArray) {
+        for (i of controlledArray) {
             var char = this.characters[i];
             var dist = Math.pow(Math.pow(char.x - avgx, 2) + Math.pow(char.y - avgy, 2), 0.5);
             if (dist > maxDist) maxDist = dist;
@@ -81,14 +83,35 @@ class LevelMap {
         return [GWIDTH / 2 - cameraFocus[0] * this.zoom, GHEIGHT / 2 - cameraFocus[1] * this.zoom, sw, sh];
     }
     update() {
-        this.zoom += (this.targetzoom - this.zoom) / 8;
-        if (!customzoom) {
-            cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 24;
-            cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 24;
-        }
-        for (var i = 1; i < this.characters.length; ++i) {
-            var character = this.characters[i];
+        var i, j, character;
+        this.zoom += (this.targetzoom - this.zoom) / 16;
+        cameraFocus[0] += (cameraTargetFocus[0] - cameraFocus[0]) / 24;
+        cameraFocus[1] += (cameraTargetFocus[1] - cameraFocus[1]) / 24;
+        for (i = 1; i < this.characters.length; ++i) {
+            character = this.characters[i];
+            if (character === null) continue;
             character.update();
+        }
+        for (i = 1; i < this.characters.length; ++i) {
+            var collides = 0;
+            if (this.characters[i] === null) continue;
+            for (j = 1; j < this.characters.length; ++j) {
+                if (i == j) continue;
+                if (this.characters[j] === null) continue;
+                var ic = [this.characters[i].x, this.characters[i].y];
+                var jc = [this.characters[j].x, this.characters[j].y];
+                if (ic[0] == jc[0] && ic[1] == jc[1]) {
+                    collides = j;
+                    break;
+                }
+            }
+            if (collides) {
+                var mergedColor = mergeColors(this.characters[i].color, this.characters[j].color);
+                console.log(mergedColor);
+                this.characters[j] = null;
+                this.characters[i].color = mergedColor;
+                this.characters[i].image = tint(imageLibrary.sprite, mergedColor);
+            }
         }
     }
     render() {
@@ -100,6 +123,7 @@ class LevelMap {
         }
         for (var i = 1; i < this.characters.length; ++i) {
             var character = this.characters[i];
+            if (character === null) continue;
             character.render();
         }
     }
@@ -239,6 +263,7 @@ var attemptMove = function (direction) {
         moving = true;
         for (var i = 1; i < level.map.characters.length; i += 1) {
             var character = level.map.characters[i];
+            if (character === null) continue;
             if ((controlled >> i) & 1) {
                 character.animateMove(direction);
             }
@@ -262,6 +287,10 @@ var update = function () {
         attemptMove(DIRECTION_RIGHT);
         keys[68] = keys[39] = false;
     }
+    if (keys[82]) {
+        loadLevel(ci);
+        keys[82] = false;
+    }
     level.map.update();
 };
 
@@ -282,11 +311,14 @@ var frame = function () {
 
 var loadLevels = function (callback) {
     console.log("loading levels...");
+    leveldata = [];
     levels = [];
     (function next(i) {
         if (i < 7) {
-            $.get(`/levels/${i}.txt`, function (data) {
-                levels.push(Level.parse(data));
+            $.get(`levels/${i}.txt`, function (data) {
+                var level = Level.parse(data);
+                leveldata.push(data);
+                levels.push(level);
                 next(i + 1);
             });
         } else {
@@ -314,6 +346,18 @@ var loadImages = function (callback) {
     })(0);
 };
 
+var loadLevel = function (level) {
+    console.log("loading level " + level);
+    ci = level;
+    levels[ci] = Level.parse(leveldata[ci]);
+    rawCanvas = document.createElement("canvas");
+    [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
+    rawCtx = rawCanvas.getContext("2d");
+    for (var j = 0; j < levels[ci].metadata.control.length; ++j) {
+        controlled |= (1 << levels[ci].metadata.control[j]);
+    }
+};
+
 var init = function () {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
@@ -332,13 +376,7 @@ var init = function () {
             window.onkeyup = keyup;
             window.onmousewheel = mousewheel;
 
-            rawCanvas = document.createElement("canvas");
-            [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
-            rawCtx = rawCanvas.getContext("2d");
-            for (var j = 0; j < levels[ci].metadata.control.length; ++j) {
-                controlled |= (1 << levels[ci].metadata.control[j]);
-                levels[ci].map.characters[levels[ci].metadata.control[j]].controlled = true;
-            }
+            loadLevel(0);
             requestAnimationFrame(frame);
         }
     })(0);
