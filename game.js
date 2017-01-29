@@ -3,12 +3,14 @@ var moving = false;
 var controlled;
 
 const COLORS = [[0, 102, 204], [204, 0, 102], [102, 204, 0]];
-const INTERVAL = 0.09;
+const INTERVAL = 1;
 
 const DIRECTION_UP = 1;
 const DIRECTION_DOWN = 2;
 const DIRECTION_LEFT = 3;
 const DIRECTION_RIGHT = 4;
+
+const CHARACTER_SIZE = 96;
 
 class LevelMap {
     static parse(mapdata, metadata) {
@@ -34,8 +36,7 @@ class LevelMap {
         return map;
     }
     constructor(array, characters, metadata) {
-        this.zoom = 0.5;
-        this.targetzoom = 0.5;
+        this.zoom = this.targetzoom = 0.5;
         this.tilemap = array;
         this.characters = characters;
         this.size = [array[0].length * TILE_SIZE, array.length * TILE_SIZE];
@@ -153,7 +154,7 @@ class Character {
         }
     }
     render() {
-        rawCtx.drawImage(this.image, this.x * TILE_SIZE, this.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        rawCtx.drawImage(this.image, this.x * TILE_SIZE + (TILE_SIZE - CHARACTER_SIZE) / 2, this.y * TILE_SIZE + (TILE_SIZE - CHARACTER_SIZE) / 2, CHARACTER_SIZE, CHARACTER_SIZE);
     }
 }
 
