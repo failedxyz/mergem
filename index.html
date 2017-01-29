@@ -4,15 +4,24 @@
     <title>miniature octo tribble</title>
     <link href="https://fonts.googleapis.com/css?family=Alfa+Slab+One" rel="stylesheet">
     <style type="text/css">
-        html, body {
-            background-color: #333;
-            color: #fff;
-        }
-        canvas#canvas {
-            display: block;
-            margin: auto;
-            background-color: #000;
-        }
+    html,
+    body {
+        background-color: #333;
+        color: #fff;
+    }
+    
+    canvas#canvas {
+        display: block;
+        margin: auto;
+        background-color: #000;
+    }
+    
+    center {
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        ms-user-select: none;
+        cursor: default;
+    }
     </style>
 </head>
 
@@ -25,7 +34,8 @@
     <script src="tiles.js"></script>
     <script src="game.js"></script>
     <center>
-        wasd to move<br /> r to reset
+        wasd to move
+        <br /> r to reset
     </center>
 </body>
 
