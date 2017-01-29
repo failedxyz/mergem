@@ -1,6 +1,5 @@
 const GWIDTH = 1280, GHEIGHT = 720;
 var moving = false;
-var controlled;
 
 const COLORS = [[0, 102, 204], [204, 0, 102], [102, 204, 0]];
 // const INTERVAL = 0.5;
@@ -101,6 +100,7 @@ class LevelMap {
 
 class Character {
     constructor(color, x, y) {
+        this.color = color;
         this.image = tint(imageLibrary.sprite, color);
         this.x = x;
         this.y = y;
@@ -130,6 +130,7 @@ class Character {
             moving = false;
             return;
         }
+        var map = levels[ci].map.tilemap;
         this.direction = direction;
         switch (direction) {
             case DIRECTION_UP:
@@ -145,7 +146,15 @@ class Character {
                 this.x += 1;
                 break;
         }
+        var tile = map[this.y][this.x];
+        if (tile instanceof ActionTile) {
+            tile.action();
+        }
         moving = false;
+    }
+    currentTile() {
+        var map = levels[ci].map.tilemap;
+        return map[this.y][this.x];
     }
     update() {
         /* if (this.direction) {
@@ -213,8 +222,11 @@ var attemptMove = function (direction) {
     var level = levels[ci];
     if (!moving) {
         moving = true;
-        for (var c of controlled) {
-            level.map.characters[c].animateMove(direction);
+        for (var i = 1; i < level.map.characters.length; i += 1) {
+            var character = level.map.characters[i];
+            if ((controlled >> i) & 1) {
+                character.animateMove(direction);
+            }
         }
     }
 };
@@ -257,7 +269,7 @@ var loadLevels = function (callback) {
     console.log("loading levels...");
     levels = [];
     (function next(i) {
-        if (i < 1) {
+        if (i < 7) {
             $.get(`/levels/${i}.txt`, function (data) {
                 levels.push(Level.parse(data));
                 next(i + 1);
@@ -308,7 +320,9 @@ var init = function () {
             rawCanvas = document.createElement("canvas");
             [rawCanvas.width, rawCanvas.height] = levels[ci].map.size;
             rawCtx = rawCanvas.getContext("2d");
-            controlled = levels[ci].metadata.control;
+            for (var j = 0; j < levels[ci].metadata.control.length; ++j) {
+                controlled |= (1 << levels[ci].metadata.control[j]);
+            }
             requestAnimationFrame(frame);
         }
     })(0);
