@@ -11,7 +11,7 @@ const DIRECTION_LEFT = 3;
 const DIRECTION_RIGHT = 4;
 
 const CHARACTER_SIZE = 96;
-const NUM_LEVELS = 7;
+const NUM_LEVELS = 9;
 
 var cameraFocus;
 var cameraTargetFocus;
