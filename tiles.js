@@ -127,6 +127,9 @@ class IceTile extends Tile {
         super(x, y);
         this.tileImage = imageLibrary.ice;
     }
+    action(character) {
+        character.momentum = character.direction;
+    }
 }
 class FloorTile extends Tile {
     constructor(x, y) {

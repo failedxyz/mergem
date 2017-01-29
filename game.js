@@ -141,11 +141,14 @@ class LevelMap {
                 this.characters[i].color = mergedColor;
                 this.characters[i].image = tint(imageLibrary.sprite, mergedColor);
                 this.characters[i].controlled = true;
-                controlled |= Math.pow(2, i);
-                controlled &= ~Math.pow(2, j);
+                controlled |= (1 << i);
+                controlled &= ~(1 << j);
                 var tile = this.characters[i].currentTile();
                 if (tile instanceof ExitTile) {
                     tile.action(this.characters[i]);
+                }
+                if (!(tile instanceof IceTile)) {
+                    moving = false;
                 }
             }
         }
@@ -202,9 +205,6 @@ class Character {
         }
         var map = levels[ci].map.tilemap;
         this.direction = direction;
-        if (map[this.y][this.x] instanceof IceTile) {
-            this.momentum = direction;
-        }
         switch (direction) {
             case DIRECTION_UP:
                 this.y -= 1;
@@ -219,7 +219,10 @@ class Character {
                 this.x += 1;
                 break;
         }
-        var tile = map[this.y][this.x];
+        var tile = this.currentTile();
+        if (tile instanceof IceTile) {
+            this.momentum = direction;
+        }
         if (tile instanceof ActionTile) {
             tile.action(this);
         }
@@ -230,9 +233,6 @@ class Character {
         return map[this.y][this.x];
     }
     update() {
-        if (!(this.currentTile() instanceof IceTile)) {
-            this.momentum = 0;
-        }
         if (this.direction) {
             var arrived = false;
             switch (this.direction) {
