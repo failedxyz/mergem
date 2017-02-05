@@ -538,7 +538,7 @@ class EndgameState extends State {
             sfx.menuhit.play();
             bgm.endgame.pause();
             bgm.endgame.currentTime = 0;
-            bgm.bgm.play(); 
+            bgm.bgm.play();
             stateMachine.pop();
             stateMachine.pop();
             keys[27] = false;
