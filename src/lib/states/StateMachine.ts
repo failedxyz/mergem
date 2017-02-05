@@ -5,10 +5,10 @@ export class StateMachine {
     constructor() {
         this.stack = [];
     }
-    empty(): boolean {
+    empty = (): boolean => {
         return this.stack.length === 0;
     }
-    peek(): State {
+    peek = (): State => {
         if (this.empty()) {
             throw new Error("State machine is empty.");
         }
@@ -18,7 +18,7 @@ export class StateMachine {
         this.stack.push(state);
     }
     pop(): State {
-        const state = this.stack.pop();
+        const state: State | undefined = this.stack.pop();
         if (state === undefined) {
             throw new Error("State machine is empty.");
         }

@@ -12,10 +12,10 @@ export class MenuState extends State {
     constructor() {
         super();
 
-        const self = this;
+        const self: MenuState = this;
         requestAnimationFrame(this.render);
-        Util.async([game.loadAssets], function (task, callback) {
-            task(function (task: string, status: string, progress: number | null, callback_: () => void) {
+        Util.async([game.loadAssets], (task: (callback: (task: string, status: string, progress: number | null, callback_: () => void) => void) => void, callback: () => void): void => {
+            task((task: string, status: string, progress: number | null, callback_: () => void) => {
                 self.currentTask = task;
                 if (status === "done") {
                     callback();
@@ -24,7 +24,7 @@ export class MenuState extends State {
                     callback_();
                 }
             });
-        }, function () {
+        }, (): void => {
             // self.ready = true;
         });
     }
@@ -36,7 +36,7 @@ export class MenuState extends State {
     }
     render = () => {
         game.context.clearRect(0, 0, game.width, game.height);
-        let message = "";
+        let message: string = "";
         if (!this.ready) {
             message = `Loading ${this.currentTask}: ${this.currentProgress}%`;
         } else {

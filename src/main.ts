@@ -22,14 +22,14 @@ export class Game {
     loadAssets = (callback: (task: string, status: string, progress: number | null, callback_: () => void) => void) => {
         let processed: number = 0;
         const total: number = this.assetLibrary.assets.length;
-        Util.async(this.assetLibrary.assets, function (asset: Asset, callback__) {
+        Util.async(this.assetLibrary.assets, (asset: Asset, callback__: () => void): void => {
             asset.load(() => {
                 processed += 1;
                 callback("assets", "progress", processed * 1.0 / total, () => {
                     callback__();
                 });
             });
-        }, function () {
+        }, (): void => {
             callback("assets", "done", null, () => { });
         });
     }
@@ -39,7 +39,7 @@ export class Game {
     }
     click = (event: MouseEvent) => {
         try {
-            const current = this.stateMachine.peek();
+            const current: State = this.stateMachine.peek();
             current.click(event);
         } catch (e) {
             console.log(`Error reading from stateMachine: ${e}`);
@@ -47,7 +47,7 @@ export class Game {
     }
     init = () => {
         this.canvas = <HTMLCanvasElement>document.getElementById("canvas");
-        const context = this.canvas.getContext("2d");
+        const context: CanvasRenderingContext2D | null = this.canvas.getContext("2d");
         if (context === null) return;
         this.context = context;
 
@@ -61,5 +61,5 @@ export class Game {
     }
 }
 
-export const game = new Game();
+export const game: Game = new Game();
 game.init();
