@@ -1,8 +1,8 @@
 import { game } from "../../main";
-import { GameState } from "./GameState";
-import { State } from "./State";
 import { Point } from "../geom/Point";
 import { Util } from "../Util";
+import { GameState } from "./GameState";
+import { State } from "./State";
 
 export class MenuState extends State {
     ready: boolean = false;
@@ -36,7 +36,7 @@ export class MenuState extends State {
     }
     render = () => {
         game.context.clearRect(0, 0, game.width, game.height);
-        const message = "";
+        let message = "";
         if (!this.ready) {
             message = `Loading ${this.currentTask}: ${this.currentProgress}%`;
         } else {

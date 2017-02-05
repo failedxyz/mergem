@@ -1,9 +1,9 @@
-import { StateMachine } from "./lib/states/StateMachine";
-import { MenuState } from "./lib/states/MenuState";
-import { State } from "./lib/states/State";
-import { LevelLoader } from "./lib/levels/LevelLoader";
 import { Asset } from "./lib/assets/Asset";
 import { AssetLibrary } from "./lib/assets/AssetLibrary";
+import { LevelLoader } from "./lib/levels/LevelLoader";
+import { MenuState } from "./lib/states/MenuState";
+import { State } from "./lib/states/State";
+import { StateMachine } from "./lib/states/StateMachine";
 import { Util } from "./lib/Util";
 
 

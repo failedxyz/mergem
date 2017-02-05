@@ -63,6 +63,12 @@
             "check-open-brace",
             "check-whitespace"
         ],
+        "ordered-imports": [
+            true,
+            {
+                "import-sources-order": "lowercase-first"
+            }
+        ],
         "quotemark": [
             true,
             "double"
