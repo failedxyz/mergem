@@ -21,6 +21,7 @@ export class MenuState extends State {
                     callback();
                 } else if (status === "progress" && progress !== null) {
                     self.currentProgress = Math.round(progress * 10000) / 100.0;
+                    self.ready = true;
                     callback_();
                 }
             });
